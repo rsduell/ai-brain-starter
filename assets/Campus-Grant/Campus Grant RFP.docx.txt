@@ -1,0 +1,24 @@
+source: Campus Grant RFP.docx · extracted 2026-10-06 by scripts/asset_text.py
+
+Campus Sensor Network Grant
+Request for Proposals CSN-2026-01 (fictional example)
+
+Section 1. Overview
+The Example State Innovation Office invites proposals to deploy low cost environmental sensor networks on university farms. Total program funding is $250,000. Awards range from $25,000 to $75,000.
+
+Section 2. Key dates
+Questions due: 2026-11-02 17:00 CT.
+Proposals due: 2026-11-16 17:00 CT.
+Awards announced: 2026-12-14.
+
+Section 3. Requirements
+R-1. The network SHALL report soil moisture at least every 15 minutes.
+R-2. The network SHALL operate for 30 days on battery without maintenance.
+R-3. Data SHALL be encrypted in transit.
+R-4. The proposer SHOULD provide an open data dashboard.
+
+Section 4. Evaluation
+Technical approach 50 points. Team experience 30 points. Cost realism 20 points. Proposals scoring below 60 are not funded.
+
+Section 5. Submission
+One PDF, 10 pages maximum, emailed to grants@example.org.

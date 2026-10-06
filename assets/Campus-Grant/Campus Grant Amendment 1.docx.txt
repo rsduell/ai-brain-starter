@@ -1,0 +1,7 @@
+source: Campus Grant Amendment 1.docx · extracted 2026-10-06 by scripts/asset_text.py
+
+Amendment 1 to RFP CSN-2026-01 (fictional example)
+
+1. The proposal due date is extended to 2026-11-23 17:00 CT.
+2. Requirement R-2 is revised: the network SHALL operate for 14 days on battery without maintenance.
+All other terms are unchanged.

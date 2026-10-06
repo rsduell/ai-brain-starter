@@ -1,0 +1,35 @@
+#!/bin/sh
+# Pre-commit: block likely secrets, files over 25 MB, and brain lint failures in staged content.
+# Enable once per clone: git config core.hooksPath hooks
+# Skip only the lint for a confirmed false positive: BRAIN_SKIP_LINT=1 git commit ...
+# Skip everything (secret false positive): BRAIN_ALLOW=1 git commit ...
+[ "$BRAIN_ALLOW" = "1" ] && exit 0
+fail=0
+
+# 1. Secrets: scan only lines being added.
+hits=$(git diff --cached -U0 --diff-filter=ACM | grep '^+' | grep -v '^+++' | grep -nE \
+  'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}|AIza[0-9A-Za-z_-]{35}|gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|xox[baprs]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|"private_key": *"')
+if [ -n "$hits" ]; then
+  echo "pre-commit: staged content looks like a secret:" >&2
+  echo "$hits" | cut -c1-120 >&2
+  fail=1
+fi
+
+# 2. Size: flag any staged file over 25 MB.
+limit=$((25 * 1024 * 1024))
+gd=$(git rev-parse --git-dir)
+git diff --cached --name-only --diff-filter=ACM | while IFS= read -r f; do
+  size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
+  if [ "$size" -gt "$limit" ]; then
+    echo "pre-commit: $f is $((size / 1024 / 1024)) MB (limit 25 MB)" >&2
+    echo big > "$gd/.brain-big"
+  fi
+done
+[ -f "$gd/.brain-big" ] && { rm -f "$gd/.brain-big"; fail=1; }
+
+# 3. Brain lint on staged notes (rules: brain/RULES.md).
+if [ "$BRAIN_SKIP_LINT" != "1" ]; then
+  python3 "$(git rev-parse --show-toplevel)/scripts/lint_brain.py" --staged || fail=1
+fi
+
+[ $fail -eq 0 ] || { echo "Commit blocked. Fix it. Lint false positive: BRAIN_SKIP_LINT=1. Secret or size false positive: BRAIN_ALLOW=1." >&2; exit 1; }
