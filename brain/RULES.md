@@ -17,11 +17,12 @@ brain/
 	<Cluster>.<topic>.md      cluster leaves
 	issues/AI <TICKET>.md     issue logs (prefix from brain.json)
 	daily/AI Log YYYY-MM-DD.md
+	Schedule.md               optional: everything dated in one list
 assets/<cluster>/           source files plus their .txt sidecars
 inbox/ingest/               drop zone for source documents to ingest
 notes/                      optional notes written by humans
 templates/                  starting points for every note type
-scripts/                    lint, fact check, text extraction
+scripts/                    lint, fact check, metrics, text extraction, schedule
 ```
 
 Links are Obsidian style wikilinks, `[[Note Name]]` (no `.md`). Obsidian is optional; any editor works. Note basenames must be unique across the repo, which is why issue logs carry the `AI ` prefix: `[[PROJ-123]]` can be a human note and `[[AI PROJ-123]]` the agent log.
@@ -80,7 +81,7 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 
 **Write:**
 1. **Find or create** from the template. The header under the H1 lists the human note link (or `none`), the tracker link, every branch (with repo) and every PR. Add branches and PRs the moment they exist.
-2. **Log.** Under `## log`, newest first, add or reuse a plain `### YYYY-MM-DD` heading (no links in date headings). One bullet per unit of work, starting with the repo in backticks: `` `app` 14:05 · what changed, SHAs, decisions, the human's calls ``. Record what a later session can't cheaply re derive. Not a transcript.
+2. **Log.** Under `## log`, newest first, add or reuse a plain `### YYYY-MM-DD` heading (no links in date headings). One bullet per unit of work, starting with the repo in backticks: `` `app` 14:05 · what changed, SHAs, decisions, the human's calls ``. Record what a later session can't cheaply re derive. Not a transcript. Tag the bullet when a codebase cluster was involved (Measuring).
 3. **Summary.** Rewrite `## summary` in place every time: current state only (what, PRs, open items, next, gotchas), **12 lines or fewer**. Bump `updated`.
 4. **Daily pointer.** One line per ticket per day on today's daily log.
 5. **Compact.** When a date section is older than about 14 days, promote anything durable (Promotion, below), then condense it to decisions and gotchas. Git keeps the full text.
@@ -123,6 +124,27 @@ What agents learn on a ticket gets promoted into the codebase cluster so it outl
 
 Grep the cluster first: extend an existing fact's `source` instead of duplicating it, and supersede a fact it contradicts. Anchor and verify new facts. Then add `- **promoted:** [[<Project>-Dev.<leaf>]] …` (or `none`) to the issue log's summary.
 
+## Measuring
+
+A codebase cluster costs effort, so check that it pays off by counting, not by feel. Issue log bullets carry tags where the event happened (several on one bullet are fine):
+- `[used: [[<Project>-Dev.<leaf>]]]`: a fact changed what you did (followed the gotcha, skipped a dead end).
+- `[rediscovered: [[<Project>-Dev.<leaf>]]]`: you hit a trap the cluster already covered but hadn't read. Say why in the bullet (hub not loaded, map didn't route).
+- `[miss]`: you hit a durable trap the cluster didn't have. Make it a fact (now or at promotion).
+- `[why]`: you dug through blame, PRs, threads or the ticket (Finding the why).
+
+An untagged event is invisible to the review. Rechecks need no tag: the script reads `verified:` bumps and `[superseded` markers from Git history.
+
+**Baseline.** When a cluster is seeded, run `python3 scripts/brain_metrics.py --cluster <Project>-Dev --baseline` (facts whose sources cite two or more issue logs, so lessons learned more than once) and record it on the hub under `## Reviews`.
+
+**Reviews.** Monthly at first, then quarterly (a [[Schedule]] entry, or a calendar reminder). Run `python3 scripts/brain_metrics.py --cluster <Project>-Dev --since <day after the previous review>` and `python3 scripts/check_facts.py`, paste the block into the hub's review log, and add a one line verdict and what you decided. Reading the numbers (small samples show direction, not proof):
+- **relearned and rediscovered well under the baseline, used above zero:** paying off.
+- **rediscovered high:** sessions aren't reading the hub, or its map didn't route. Fix the TRAVERSE map, the one screen facts, or the loading instruction in your agent's global instructions.
+- **flags mostly noise** (verified bumps far above superseded markers): narrow those anchors from whole files to symbols.
+- **closed tickets missing `promoted:`:** promotion is being skipped; make it part of closing a ticket.
+- **why often:** worth a helper script for the lookup.
+- **miss:** normal growth; each one should have become a fact.
+- **all tags zero while tickets were worked:** agents aren't tagging. Fix that first; the other numbers mean little without it.
+
 ## Finding the why
 
 Code shows what it does, not why. When a task needs the why, look it up rather than guessing, then keep the answer:
@@ -135,6 +157,26 @@ Code shows what it does, not why. When a task needs the why, look it up rather t
 
 Don't mirror PR or tracker history into the brain in bulk: it's mostly noise, it's already searchable where it lives, and copies go stale.
 
+## Schedule (optional)
+
+`brain/Schedule.md` (`templates/Schedule.md`, type `brain-schedule`) is the single list of everything dated: recurring reviews, milestones (freeze, release, launch), follow ups and deadlines. Human notes keep dates in plain language; formatted dates live only here. Skip this section entirely if you don't use it.
+
+Each entry is a `###` heading under `## Milestones`, `## Recurring` or `## One off`, with bullets right under it:
+- `next:` `YYYY-MM-DD` or `TBD` (a milestone whose date isn't known yet)
+- `kind:` `milestone` | `recurring` | `task` | `meeting`
+- `cadence:` `none` | `weekly` | `monthly` | `quarterly` | `<c> until YYYY-MM-DD, then <c>`
+- optional: `moves:` (`YYYY-MM-DD → YYYY-MM-DD` one off overrides, `·` separated), `after:` (`[[Schedule#Other entry]]`: due the day after it), `affects:` (links), `about:` (the note it's about), `calendar:` (`no` or an event id), `last:`
+- `source:` where the date came from (a note link, or who said it and when)
+
+Then one to three lines of body: what to do when it comes up.
+
+**The routine** (ask your agent for it each morning, or wrap it in a command):
+1. `python3 scripts/date_scan.py` lists lines with dates ("demo on the 20th", "by Friday", "next week") added to human notes (`human_dirs` in `brain.json`) since `last_scan`. The agent drops references to the past, resolves relative dates against the note's date, and asks once, per hit: **schedule**, **milestone**, **calendar** (if it has a calendar tool), or **ignore**. Rejected hits go under `## Ignored` as `- <path> · "<line text>"` so they're never asked about again. Then `python3 scripts/schedule.py mark --scan $(git rev-parse HEAD)`.
+2. `python3 scripts/schedule.py report` prints "Due and coming up" through Friday of next week: overdue and today's items, milestone countdowns with prep reminders at 14, 7, 3 and 1 days, facts due a recheck, stale hubs, issue logs due for compaction, and `- [ ] **YYYY-MM-DD** · task` todos in human notes. `--sprints` and `--events` add a sprint line and one off calendar events from JSON the agent fetched (shapes in the script's help). Paste it into the day's note, then `python3 scripts/schedule.py mark --report <now, UTC ISO>`.
+3. **After doing a recurring entry**, `python3 scripts/schedule.py done "<entry>"` records `last:` and moves `next:` on by cadence (an entry with cadence `none` moves under `## Done`).
+
+Never create calendar events without asking. The lint checks the entry format.
+
 ## Git and the lint
 
 The brain is a Git repo. Commit at the end of each unit of work, staging explicit paths (`git add -- "<path>"`), never `git add -A`, because other sessions may be writing at the same time. Never rewrite history (`--amend`, `rebase`, `reset`, force push). Subject `<ticket or area>: <what moved>`.
@@ -145,5 +187,6 @@ The brain is a Git repo. Commit at the end of each unit of work, staging explici
 - hubs without `lifecycle` and `as_of`
 - `[superseded ...]` markers or `superseded_by` without a link
 - facts in `anchored: true` notes without anchors and verified (or a recheck date), a source, or a valid scope
+- schedule entries without a `next` date (or `TBD`), with an unknown kind, or with a malformed cadence or `moves`
 
 Run `python3 scripts/lint_brain.py --all` for the whole brain and `python3 -m unittest discover -s scripts` for the script tests. `BRAIN_SKIP_LINT=1` is only for a confirmed false positive.

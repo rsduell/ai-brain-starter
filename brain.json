@@ -9,5 +9,6 @@
 	"hub_lifecycles": ["active", "submitted", "archived"],
 	"fact_scopes": ["personal", "team", "provisional"],
 	"projects_dir": "~/Projects",
-	"repos": {}
+	"repos": {},
+	"human_dirs": ["notes"]
 }

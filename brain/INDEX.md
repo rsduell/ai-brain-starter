@@ -13,3 +13,4 @@ Start here when answering. Rules for reading and writing: `brain/RULES.md`.
 ## logs
 - issue logs: `brain/issues/AI <TICKET>.md` (example: [[AI DEMO-1]])
 - daily logs: `brain/daily/AI Log YYYY-MM-DD.md` (example: [[AI Log 2026-10-06]])
+- schedule (optional): [[Schedule]], everything dated in one list

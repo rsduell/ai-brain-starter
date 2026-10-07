@@ -37,5 +37,5 @@ PR: [app #42](https://github.com/example/app/pull/42)
 - `app` 15:10 · PR #42 merged (`9f1e2d3`) after review; reviewer asked for a jitter cap, added in `4c5d6e7`.
 
 ### 2026-10-01
-- `app` 10:20 · Local build failed on JDK 25 (`Unsupported class file major version 69`). Fixed by pointing Gradle at JDK 17. Worth promoting.
-- `app` 16:45 · Retry test passed even with the fix removed: the fake uploader never suspended. Added `yield()` to the fake; the test now fails without the fix.
+- `app` 10:20 · Local build failed on JDK 25 (`Unsupported class file major version 69`). Fixed by pointing Gradle at JDK 17. Worth promoting. [miss]
+- `app` 16:45 · Retry test passed even with the fix removed: the fake uploader never suspended. Added `yield()` to the fake; the test now fails without the fix. [miss]

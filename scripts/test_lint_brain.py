@@ -164,6 +164,46 @@ class LintTest(unittest.TestCase):
 		self.assertEqual(len(results), 1)
 		self.assertIn("fact scope `global`", results[0])
 
+	def schedule(self, entry):
+		return self.write("brain/Schedule.md", "---\ntype: brain-schedule\n---\n\n## One off\n\n" + entry)
+
+	def test_valid_schedule_entry_passes(self):
+		rel = self.schedule("### Review\n- next: 2026-10-27\n- kind: recurring\n- cadence: monthly until 2026-12-31, then quarterly\n- moves: 2026-12-31 → 2027-01-01\nDo it.\n")
+
+		results = self.lint(rel)
+
+		self.assertEqual(results, [])
+
+	def test_tbd_milestone_passes(self):
+		rel = self.schedule("### Release\n- next: TBD\n- kind: milestone\n")
+
+		results = self.lint(rel)
+
+		self.assertEqual(results, [])
+
+	def test_schedule_entry_with_bad_date_is_reported(self):
+		rel = self.schedule("### Review\n- next: Oct 27\n- kind: task\n")
+
+		results = self.lint(rel)
+
+		self.assertEqual(len(results), 1)
+		self.assertIn("needs `- next:", results[0])
+
+	def test_schedule_entry_with_bad_kind_and_cadence_is_reported(self):
+		rel = self.schedule("### Review\n- next: 2026-10-27\n- kind: chore\n- cadence: biweekly\n")
+
+		results = self.lint(rel)
+
+		self.assertEqual(len(results), 2)
+
+	def test_schedule_entry_with_bad_moves_is_reported(self):
+		rel = self.schedule("### Review\n- next: 2026-10-27\n- kind: task\n- moves: 12-31 to 01-01\n")
+
+		results = self.lint(rel)
+
+		self.assertEqual(len(results), 1)
+		self.assertIn("moves", results[0])
+
 
 if __name__ == "__main__":
 	unittest.main()

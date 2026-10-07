@@ -22,6 +22,18 @@ Fictional example. What agents learned building and testing the `app` repo, prom
 - Gradle needs JDK 17; JDK 25 fails with `major version 69`.
 - Fakes of suspending calls must `yield()`, or cancellation tests prove nothing.
 
+## Reviews
+Is this cluster paying off? Count it rather than going by feel (`brain/RULES.md` → Measuring).
+
+**Schedule:** [[Schedule#Demo-Dev review]], monthly to the end of the year, then quarterly.
+
+**Run:** `python3 scripts/brain_metrics.py --cluster Demo-Dev --since <day after the previous review>` and `python3 scripts/check_facts.py`. Paste the block into the review log below with a one line verdict and what you decided, then `python3 scripts/schedule.py done "Demo-Dev review"`.
+
+**Baseline** (taken when the cluster was seeded, 2026-10-06): 2 facts, none cited by two or more issue logs (`--baseline`). Compare each window's relearned and rediscovered counts against it.
+
+### Review log
+None yet.
+
 ## Team doc candidates
 Every `scope: team` fact is a candidate for the repo's own docs; the repo owner decides.
 - [[Demo-Dev.build]]: the JDK 17 requirement

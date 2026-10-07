@@ -49,6 +49,7 @@ So the work moves to when knowledge comes in: an agent turns sources into small 
 - **Code facts tied to code:** what agents learn about a codebase is anchored to files and symbols, and `scripts/check_facts.py` flags facts whose code changed on `origin/HEAD`, with the commits and PRs that changed it.
 - **Lint on every commit:** a pre-commit hook blocks broken links, invalid statuses, overlong summaries, stale dates and malformed facts.
 - **Git history:** every agent change is a reviewable, revertable commit.
+- **Measured, not felt:** issue log bullets are tagged when a fact helped (`[used]`), when an agent hit a trap the brain already knew (`[rediscovered]`) or didn't (`[miss]`). `scripts/brain_metrics.py` counts those, plus lessons learned twice and how often change flags were noise, for a monthly or quarterly review against a baseline.
 
 The full rules agents follow are in [`brain/RULES.md`](brain/RULES.md). Read that file to understand the system in depth.
 
@@ -60,14 +61,15 @@ Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl
 	```
 	cp -R ai-brain-starter ~/my-brain && cd ~/my-brain
 	git init && git config core.hooksPath hooks
-	python3 -m unittest discover -s scripts      # 24 tests should pass
+	python3 -m unittest discover -s scripts      # 61 tests should pass
 	python3 scripts/lint_brain.py --all          # should print nothing
 	```
 2. Edit `brain.json`: your ticket key pattern (Linear `ABC-123`, Jira, `GH-123`), the statuses you use, and where your code repos live (`repos` or `projects_dir`).
 3. Open the folder in your agent tool and try the examples:
 	- "What's the proposal deadline for the campus grant?" (it should find the amendment, not the original date)
 	- "What did we learn on DEMO-1?"
-4. When you've seen how it works, delete the examples: `Campus-Grant*`, `Demo-Dev*`, `notes/Campus Grant.md`, `assets/Campus-Grant/`, `issues/AI DEMO-1.md` and the example daily log. Update `brain/INDEX.md`.
+	- "Is the Demo-Dev cluster paying off?" (it should run `brain_metrics.py` and read the numbers against the hub's baseline)
+4. When you've seen how it works, delete the examples: `Campus-Grant*`, `Demo-Dev*`, `notes/Campus Grant.md`, `assets/Campus-Grant/`, `issues/AI DEMO-1.md` and the example daily log. Update `brain/INDEX.md`. Clear the example entries out of `brain/Schedule.md`, or delete it if you won't use a schedule.
 
 ## Using it while you work in other repos
 
@@ -78,7 +80,8 @@ My agent knowledge base lives at ~/my-brain. Read ~/my-brain/brain/RULES.md befo
 write to it in a session. Log real work there even when working in another repo: ticket work in
 brain/issues/AI <TICKET>.md, a pointer on today's brain/daily/AI Log YYYY-MM-DD.md. Commit the
 files you wrote, by explicit path. At the start of work in a repo covered by a <Project>-Dev
-cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py.
+cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py. Tag issue log bullets
+[used: [[leaf]]], [rediscovered: [[leaf]]], [miss] or [why] when they apply (RULES.md → Measuring).
 ```
 
 ## Everyday use
@@ -91,13 +94,24 @@ cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py.
 | "This ticket's merged" | Promotes durable gotchas into the codebase cluster |
 | "Why is this code like this?" | Follows blame → PR → review threads → ticket, and keeps a hard won answer as a fact |
 | "Run the checks" | `lint_brain.py --all` and `check_facts.py` |
+| "Is the Demo-Dev cluster paying off?" | `brain_metrics.py` for the window since the last review, read against the baseline |
+| "What's coming up?" (optional schedule) | Scans your notes for new dates and asks about each, then prints due and coming up |
 
 ## Start small
 
 You don't need all of it on day one:
 1. **Issue logs and daily logs** alone already fix most of the amnesia.
 2. **Add a document cluster** the first time you have a source you keep asking questions about.
-3. **Add a codebase cluster** once you notice the same gotcha being rediscovered.
+3. **Add a codebase cluster** once you notice the same gotcha being rediscovered. Take a baseline when you seed it and tag issue logs from day one, so the first review has numbers.
+4. **Add the schedule** if dates keep slipping through your notes (below).
+
+## Optional: a schedule
+
+`brain/Schedule.md` keeps everything dated in one list: recurring reviews (like the cluster review), milestones (a freeze, a release), follow ups and deadlines. You keep writing dates in plain language in your own notes. Each morning, ask the agent to run the routine in `brain/RULES.md` → Schedule:
+1. **Date scan:** it finds dates added to your notes since the last scan ("demo on the 20th", "by Friday") and asks once whether each is a schedule item, a milestone, a calendar event or nothing.
+2. **Due and coming up:** overdue and today's items, the next week and a half, milestone countdowns with prep reminders, plus brain upkeep that's due (facts to recheck, stale hubs, logs to compact).
+
+If your agent has calendar or tracker tools, it can also add one off calendar events and your sprint dates to the report. Nothing reaches your calendar without your OK.
 
 ## Tradeoffs
 
@@ -115,7 +129,8 @@ brain/                    the agent notes (RULES.md, INDEX.md, clusters, issues/
 assets/                   source files and their .txt sidecars
 inbox/ingest/             drop zone for documents to ingest
 notes/                    notes written by humans (optional)
-templates/                hub, leaf, code facts leaf, issue log, daily log
-scripts/                  lint_brain.py, check_facts.py, asset_text.py (+ pdf_text.swift), tests
+templates/                hub, leaf, code facts leaf, issue log, daily log, schedule
+scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ pdf_text.swift),
+                          schedule.py and date_scan.py (optional schedule), tests
 hooks/pre-commit          secrets, file size, lint
 ```

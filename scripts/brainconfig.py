@@ -22,6 +22,9 @@ DEFAULTS = {
 	# <projects_dir>/<name>.
 	"projects_dir": "~/Projects",
 	"repos": {},
+	# Folders of notes written by humans (optional schedule): the date scan reads them, and
+	# `- [ ] **YYYY-MM-DD** · task` todos in them show up in the schedule report.
+	"human_dirs": ["notes"],
 }
 
 

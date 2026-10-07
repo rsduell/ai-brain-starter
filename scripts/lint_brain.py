@@ -13,6 +13,8 @@ Checks:
 	supersede   `superseded_by:` and inline `[superseded ...]` markers carry a link
 	facts       in `anchored: true` notes, every `###` fact has anchors + verified
 	            (or a recheck date), a source and a scope
+	schedule    in `brain/Schedule.md` (optional), every entry has a `next` date or TBD, a known
+	            kind, a valid cadence and well formed `moves`
 
 Standard library only (Python 3.9+).
 """
@@ -36,6 +38,11 @@ REPO_KEY = r"[A-Za-z0-9_.-]+(?:@[A-Za-z0-9_./-]+)?"
 ANCHOR_RE = re.compile(r"`(%s):(symbol:)?([^`]+)`" % REPO_KEY)
 VERIFIED_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})((?:\s*·\s*%s\s+[0-9a-f]{7,40})+)\s*$" % REPO_KEY)
 VERIFIED_PAIR_RE = re.compile(r"(%s)\s+([0-9a-f]{7,40})" % REPO_KEY)
+SCHEDULE_KINDS = {"milestone", "recurring", "task", "meeting"}
+CADENCE_WORD = r"(?:none|weekly|monthly|quarterly)"
+CADENCE_RE = re.compile(r"^%s(?: until \d{4}-\d{2}-\d{2}, then %s)?$" % (CADENCE_WORD, CADENCE_WORD))
+MOVE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\s*→\s*(\d{4}-\d{2}-\d{2})$")
+SCHEDULE_META_RE = re.compile(r"^- (next|kind|cadence|moves|after|affects|about|source|calendar|last):\s*(.*)$")
 
 
 def vault_names(root):
@@ -130,6 +137,65 @@ def parse_facts(text):
 	return facts
 
 
+def parse_schedule(text):
+	"""Entries in Schedule.md: each `### ` heading plus its `- key: value` bullets, with the `## ` section it sits in.
+
+	Returns dicts: title, line, section, fields {key: value}, body (lines after the bullets).
+	"""
+	entries = []
+	current = None
+	section_name = ""
+	in_meta = False
+	for i, line in enumerate(text.split("\n"), 1):
+		if line.startswith("## "):
+			section_name = line[3:].strip()
+			current = None
+			continue
+		if line.startswith("### "):
+			current = {"title": line[4:].strip(), "line": i, "section": section_name, "fields": {}, "body": []}
+			entries.append(current)
+			in_meta = True
+			continue
+		if current is None:
+			continue
+		m = SCHEDULE_META_RE.match(line) if in_meta else None
+		if m:
+			current["fields"][m.group(1)] = m.group(2).strip()
+		elif line.strip():
+			in_meta = False
+			current["body"].append(line)
+	return entries
+
+
+def parse_moves(value):
+	"""`2026-12-31 → 2027-01-01 · 2027-03-31 → 2027-04-01` → {from: to}; None if malformed."""
+	moves = {}
+	for part in [p.strip() for p in (value or "").split("·") if p.strip()]:
+		m = MOVE_RE.match(part)
+		if not m:
+			return None
+		moves[m.group(1)] = m.group(2)
+	return moves
+
+
+def lint_schedule(text):
+	errors = []
+	for e in parse_schedule(text):
+		if e["section"] in ("Done", "Ignored"):
+			continue
+		f, where = e["fields"], e["line"]
+		nxt = f.get("next")
+		if nxt is None or not (nxt == "TBD" or DATE_RE.match(nxt)):
+			errors.append((where, "schedule entry needs `- next: YYYY-MM-DD` or `TBD`"))
+		if f.get("kind") not in SCHEDULE_KINDS:
+			errors.append((where, "schedule kind `%s` not one of: %s" % (f.get("kind"), " | ".join(sorted(SCHEDULE_KINDS)))))
+		if not CADENCE_RE.match(f.get("cadence", "none")):
+			errors.append((where, "cadence `%s` not `none|weekly|monthly|quarterly` or `<c> until YYYY-MM-DD, then <c>`" % f.get("cadence")))
+		if "moves" in f and parse_moves(f["moves"]) is None:
+			errors.append((where, "moves `%s` not `YYYY-MM-DD → YYYY-MM-DD` pairs" % f["moves"]))
+	return errors
+
+
 def lint_facts(text, cfg):
 	errors = []
 	for f in parse_facts(text):
@@ -216,6 +282,9 @@ def lint_text(rel_path, text, names, cfg):
 
 	if meta.get("anchored", ("", 0))[0] == "true":
 		errors.extend(lint_facts(text, cfg))
+
+	if note_type == "brain-schedule":
+		errors.extend(lint_schedule(text))
 
 	if note_type == "brain-hub":
 		as_of = meta.get("as_of")
