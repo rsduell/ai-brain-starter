@@ -117,7 +117,7 @@ The date scan reads `journal/` along with `notes/`, so dates you write there rea
 
 ## Optional: plan notes
 
-If you plan with one AI, implement with another and verify with a third, `plans/<TICKET> Plan.md` is the handoff. Each plan goes in exactly as the planning tool wrote it, never reformatted. Around it sit a status, who did each phase, a checkbox per step for the implementer, anything the plan lacks that another AI needs, and the implementer's deviations. The verifier checks the work against it and records the result. Rules: `brain/RULES.md` → Plans.
+If you plan with one AI, implement with another and verify with a third, `plans/<TICKET> Plan.md` is the handoff. Plans are test driven where they can be: contracts first, then tests that fail against them, then the code that turns them green. Each plan goes in exactly as the planning tool wrote it, never reformatted. Around it sit a status, who did each phase, a checkbox per step for the implementer, anything the plan lacks that another AI needs, and the implementer's deviations. The verifier checks the work against it and records the result. Rules: `brain/RULES.md` → Plans.
 
 ## Optional: a schedule
 

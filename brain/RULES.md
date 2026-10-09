@@ -111,10 +111,16 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 - **Take the plan wholesale.** Paste it under `## Plan` exactly as the planning tool wrote it: no rewording, reordering or trimming. Only demote its headings so its top level is `###`. What the handoff needs goes beside it:
 	- `Status:` `draft` | `approved` | `in progress` | `implemented` | `changes needed` | `verified` | `superseded` | `dropped`, then `Planned:`, `Implemented:` and `Verified:` lines with the date and the tool and model.
 	- `## Additions`, only for what the plan lacks that another AI needs: the human's calls from the chat, conventions, how to verify.
-	- `## Progress`, one checkbox per step of the plan, named as the plan names it.
+	- `## Progress`, one checkbox per step of the plan, named as the plan names it. A test driven step adds its red run and green SHA: `- [x] 2. Upload retry · red: 3 tests failed on assertions · green: a1b2c3d`.
 	- `## Deviations`, written by the implementer.
-- **Implementer:** works from the newest `approved` plan, sets `in progress`, checks off `## Progress` with SHAs, records anything done differently under `## Deviations` with why, never edits the plan text, and ends at `implemented`.
-- **Verifier:** checks every step against the diff and runs the plan's checks, writes the result where you keep reviews (a review note, or the issue log) and links it from `Verified:`, then sets `verified` or `changes needed`.
+- **Test driven, whenever possible.** The planner writes the plan in this order, so it arrives that way and nothing is reshaped when it's filed:
+	1. **Contracts:** the interfaces the work needs: signatures, inputs and outputs, errors, and what must not change.
+	2. **Tests per contract:** each test's name and what it arranges, acts on and asserts, and the command that runs them.
+	3. **Implementation** that turns those tests green, contract by contract.
+
+	A step that can't be tested first (build or CI config, docs, a spike, UI with no test harness) says so and says how it gets checked instead.
+- **Implementer:** works from the newest `approved` plan and sets `in progress`. For each contract: add it as a stub so its tests compile, write the tests, run them and watch them fail on their assertions (red, not a compile error), implement until they pass (green), and refactor only while green. Checks off `## Progress` with the red run and green SHA, records anything done differently under `## Deviations` with why, never edits the plan text, and ends at `implemented`.
+- **Verifier:** checks every step against the diff and runs the plan's checks. For test driven steps, it checks that every contract has tests, that `## Progress` shows each went red before green, and that the tests pin the contract rather than the implementation's internals. It writes the result where you keep reviews (a review note, or the issue log) and links it from `Verified:`, then sets `verified` or `changes needed`.
 - **Links:** the issue log header gets `plan note: [[PROJ-123 Plan]]`, and its summary links the current plan: `- **plan:** [[PROJ-123 Plan#Plan (YYYY-MM-DD)]] · <status>`.
 - **Archive:** when the ticket closes, move the plan note to `plans/_archive/`. Wikilinks keep working.
 

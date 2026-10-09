@@ -19,6 +19,7 @@ Status: draft
 <!-- only what the plan lacks that the implementing or verifying AI needs: your calls made in chat, conventions, how to verify. Delete this section when nothing is missing. -->
 
 ## Progress
-- [ ] 1. <the plan's first step, named as the plan names it>
+<!-- one box per step, named as the plan names it. Test driven steps add the red run and the green SHA. -->
+- [ ] 1. <the plan's first step> · red: <tests, how they failed> · green: <SHA>
 
 ## Deviations
