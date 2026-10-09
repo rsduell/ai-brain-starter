@@ -34,7 +34,7 @@ PR: [app #42](https://github.com/example/app/pull/42)
 - `brain` · Promoted the two gotchas to [[Demo-Dev]] at close.
 
 ### 2026-10-03
-- `app` 15:10 · PR #42 merged (`9f1e2d3`) after review; reviewer asked for a jitter cap, added in `4c5d6e7`.
+- `app` 15:10 · [app #42](https://github.com/example/app/pull/42) merged (`9f1e2d3`) after review; reviewer asked for a jitter cap, added in `4c5d6e7`.
 
 ### 2026-10-01
 - `app` 10:20 · Local build failed on JDK 25 (`Unsupported class file major version 69`). Fixed by pointing Gradle at JDK 17. Worth promoting. [miss]

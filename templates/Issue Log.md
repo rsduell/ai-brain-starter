@@ -20,6 +20,7 @@ human note: [[PROJ-123]]
 tracker: [PROJ-123](https://tracker.example.com/issue/PROJ-123)
 branch: `proj-123-short-slug` (app)
 PR: [app #N](https://github.com/OWNER/app/pull/N)
+<!-- optional, once the note exists: review note: [[PROJ-123 Review]] -->
 
 ## summary
 <!-- current state only; rewrite in place on every touch; 12 lines or fewer -->
@@ -30,7 +31,7 @@ PR: [app #N](https://github.com/OWNER/app/pull/N)
 - **gotchas:** 
 
 ## log
-<!-- newest first. one ### per day. bullets: `repo` HH:MM · work, SHAs, decisions -->
+<!-- newest first. one ### per day. bullets: `repo` HH:MM · work, SHAs, decisions; link the first mention of each PR and other ticket -->
 
 ### YYYY-MM-DD
 - 

@@ -80,15 +80,15 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 **Frontmatter** (`templates/Issue Log.md`; the lint enforces the lists from `brain.json`): `issue`, `tracker` (URL), `human` (optional link to a human note), `repositories`, `role` (`author` | `reviewer` | `advisor`), `branches` (`repo:branch`), `prs` (URLs), `status` (`backlog` | `in progress` | `in review` | `in QA` | `merged` | `done` | `advised`), `updated`.
 
 **Write:**
-1. **Find or create** from the template. The header under the H1 lists the human note link (or `none`), the tracker link, every branch (with repo) and every PR. Add branches and PRs the moment they exist.
-2. **Log.** Under `## log`, newest first, add or reuse a plain `### YYYY-MM-DD` heading (no links in date headings). One bullet per unit of work, starting with the repo in backticks: `` `app` 14:05 · what changed, SHAs, decisions, the human's calls ``. Record what a later session can't cheaply re derive. Not a transcript. Tag the bullet when a codebase cluster was involved (Measuring).
+1. **Find or create** from the template. The header under the H1 lists the human note link (or `none`), the tracker link, every branch (with repo) and every PR. Add branches and PRs the moment they exist. If you keep PR reviews in their own human note, add `review note: [[PROJ-123 Review]]` once that note exists (not before: the lint rejects a link to a missing note).
+2. **Log.** Under `## log`, newest first, add or reuse a plain `### YYYY-MM-DD` heading (no links in date headings). One bullet per unit of work, starting with the repo in backticks: `` `app` 14:05 · what changed, SHAs, decisions, the human's calls ``. Link the first mention of each PR and each other ticket in a bullet: a PR as `[app #42](https://github.com/OWNER/app/pull/42)`, a ticket as `[[AI PROJ-124]]` when it has an issue log and as its tracker link otherwise. Headings, frontmatter and code spans don't count. Record what a later session can't cheaply re derive. Not a transcript. Tag the bullet when a codebase cluster was involved (Measuring).
 3. **Summary.** Rewrite `## summary` in place every time: current state only (what, PRs, open items, next, gotchas), **12 lines or fewer**. Bump `updated`.
 4. **Daily pointer.** One line per ticket per day on today's daily log.
 5. **Compact.** When a date section is older than about 14 days, promote anything durable (Promotion, below), then condense it to decisions and gotchas. Git keeps the full text.
 
 ## Daily logs
 
-`brain/daily/AI Log YYYY-MM-DD.md` (`templates/Daily Log.md`) is the day's index. Ticket work gets one pointer line per ticket per day, updated rather than repeated: ``- `app` · [[AI PROJ-123]] · <what moved>``. Other work (ingest, research, brain maintenance) gets short bullets with links to the notes touched.
+`brain/daily/AI Log YYYY-MM-DD.md` (`templates/Daily Log.md`) is the day's index. Ticket work gets one pointer line per ticket per day, updated rather than repeated: ``- `app` · [[AI PROJ-123]] · <what moved>``. Other work (ingest, research, brain maintenance) gets short bullets with links to the notes touched. Link PRs and tickets the same way as in issue logs.
 
 ## Codebase facts
 
