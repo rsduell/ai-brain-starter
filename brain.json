@@ -10,5 +10,5 @@
 	"fact_scopes": ["personal", "team", "provisional"],
 	"projects_dir": "~/Projects",
 	"repos": {},
-	"human_dirs": ["notes"]
+	"human_dirs": ["notes", "journal"]
 }

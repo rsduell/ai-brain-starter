@@ -69,7 +69,7 @@ Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl
 	- "What's the proposal deadline for the campus grant?" (it should find the amendment, not the original date)
 	- "What did we learn on DEMO-1?"
 	- "Is the Demo-Dev cluster paying off?" (it should run `brain_metrics.py` and read the numbers against the hub's baseline)
-4. When you've seen how it works, delete the examples: `Campus-Grant*`, `Demo-Dev*`, `notes/Campus Grant.md`, `assets/Campus-Grant/`, `issues/AI DEMO-1.md` and the example daily log. Update `brain/INDEX.md`. Clear the example entries out of `brain/Schedule.md`, or delete it if you won't use a schedule.
+4. When you've seen how it works, delete the examples: `Campus-Grant*`, `Demo-Dev*`, `notes/Campus Grant.md`, `assets/Campus-Grant/`, `issues/AI DEMO-1.md`, the example daily log and `journal/2026-10-06.md`. Update `brain/INDEX.md`. Clear the example entries out of `brain/Schedule.md`, or delete it if you won't use a schedule.
 
 ## Using it while you work in other repos
 
@@ -95,6 +95,7 @@ cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py. Tag is
 | "Why is this code like this?" | Follows blame → PR → review threads → ticket, and keeps a hard won answer as a fact |
 | "Run the checks" | `lint_brain.py --all` and `check_facts.py` |
 | "Is the Demo-Dev cluster paying off?" | `brain_metrics.py` for the window since the last review, read against the baseline |
+| "Wrap up the day" (optional journal) | Summarizes today's daily log into the journal, below the divider |
 | "What's coming up?" (optional schedule) | Scans your notes for new dates and asks about each, then prints due and coming up |
 
 ## Start small
@@ -103,7 +104,14 @@ You don't need all of it on day one:
 1. **Issue logs and daily logs** alone already fix most of the amnesia.
 2. **Add a document cluster** the first time you have a source you keep asking questions about.
 3. **Add a codebase cluster** once you notice the same gotcha being rediscovered. Take a baseline when you seed it and tag issue logs from day one, so the first review has numbers.
-4. **Add the schedule** if dates keep slipping through your notes (below).
+4. **Add a journal** if you want a note of your own for each day, linked to the agents' daily log (below).
+5. **Add the schedule** if dates keep slipping through your notes (below).
+
+## Optional: a journal
+
+`journal/YYYY-MM-DD.md` is your note for the day: meetings, decisions, what you worked on. It pairs with the agents' daily log for the same date, each linking the other. Above the `---` divider is yours and agents never touch it. Below it, agents keep a short list: the schedule report (if you use one), one line per ticket worked that day linking its issue log, and an end of day wrap up summarizing the daily log. Detail stays in the brain, so the journal stays readable. Rules: `brain/RULES.md` → Journal.
+
+The date scan reads `journal/` along with `notes/`, so dates you write there reach the schedule.
 
 ## Optional: a schedule
 
@@ -129,7 +137,8 @@ brain/                    the agent notes (RULES.md, INDEX.md, clusters, issues/
 assets/                   source files and their .txt sidecars
 inbox/ingest/             drop zone for documents to ingest
 notes/                    notes written by humans (optional)
-templates/                hub, leaf, code facts leaf, issue log, daily log, schedule
+journal/                  your day notes, paired with the daily logs (optional)
+templates/                hub, leaf, code facts leaf, issue log, daily log, journal entry, schedule
 scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ pdf_text.swift),
                           schedule.py and date_scan.py (optional schedule), tests
 hooks/pre-commit          secrets, file size, lint

@@ -21,6 +21,7 @@ brain/
 assets/<cluster>/           source files plus their .txt sidecars
 inbox/ingest/               drop zone for source documents to ingest
 notes/                      optional notes written by humans
+journal/YYYY-MM-DD.md       optional: the human's day note, paired with the daily log
 templates/                  starting points for every note type
 scripts/                    lint, fact check, metrics, text extraction, schedule
 ```
@@ -89,6 +90,17 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 ## Daily logs
 
 `brain/daily/AI Log YYYY-MM-DD.md` (`templates/Daily Log.md`) is the day's index. Ticket work gets one pointer line per ticket per day, updated rather than repeated: ``- `app` · [[AI PROJ-123]] · <what moved>``. Other work (ingest, research, brain maintenance) gets short bullets with links to the notes touched. Link PRs and tickets the same way as in issue logs.
+
+## Journal (optional)
+
+`journal/YYYY-MM-DD.md` (`templates/Journal Entry.md`) is the human's own note for the day. It isn't part of the brain: it's for people, and the daily log stays the agents' index. Skip this section if you don't keep one.
+- **Pairing.** The journal links its daily log below the divider (`Agent day log: [[AI Log YYYY-MM-DD]]`), and the daily log links back under its H1 (`journal: [[YYYY-MM-DD]]`). Once a repo keeps a journal, creating either note for a day means creating both.
+- **Above the divider belongs to the human.** Agents never edit it.
+- **Below the divider, agents keep it short:**
+	- the schedule's "Due and coming up" report, when you use the schedule, replaced rather than appended on each run
+	- under `## Tickets`, one line per ticket worked that day, updated in place: `- [[AI PROJ-123]] · what moved`
+	- at the end of the day, under `## Wrap up`, a few bullets summarizing the daily log
+- **No detail in the journal.** Decisions, SHAs, explanations and plans live in issue logs, clusters and human notes; the journal links to them.
 
 ## Codebase facts
 
@@ -172,7 +184,7 @@ Then one to three lines of body: what to do when it comes up.
 
 **The routine** (ask your agent for it each morning, or wrap it in a command):
 1. `python3 scripts/date_scan.py` lists lines with dates ("demo on the 20th", "by Friday", "next week") added to human notes (`human_dirs` in `brain.json`) since `last_scan`. The agent drops references to the past, resolves relative dates against the note's date, and asks once, per hit: **schedule**, **milestone**, **calendar** (if it has a calendar tool), or **ignore**. Rejected hits go under `## Ignored` as `- <path> · "<line text>"` so they're never asked about again. Then `python3 scripts/schedule.py mark --scan $(git rev-parse HEAD)`.
-2. `python3 scripts/schedule.py report` prints "Due and coming up" through Friday of next week: overdue and today's items, milestone countdowns with prep reminders at 14, 7, 3 and 1 days, facts due a recheck, stale hubs, issue logs due for compaction, and `- [ ] **YYYY-MM-DD** · task` todos in human notes. `--sprints` and `--events` add a sprint line and one off calendar events from JSON the agent fetched (shapes in the script's help). Paste it into the day's note, then `python3 scripts/schedule.py mark --report <now, UTC ISO>`.
+2. `python3 scripts/schedule.py report` prints "Due and coming up" through Friday of next week: overdue and today's items, milestone countdowns with prep reminders at 14, 7, 3 and 1 days, facts due a recheck, stale hubs, issue logs due for compaction, and `- [ ] **YYYY-MM-DD** · task` todos in human notes. `--sprints` and `--events` add a sprint line and one off calendar events from JSON the agent fetched (shapes in the script's help). Paste it into today's journal below the divider (or your own day note), then `python3 scripts/schedule.py mark --report <now, UTC ISO>`.
 3. **After doing a recurring entry**, `python3 scripts/schedule.py done "<entry>"` records `last:` and moves `next:` on by cadence (an entry with cadence `none` moves under `## Done`).
 
 Never create calendar events without asking. The lint checks the entry format.
