@@ -22,6 +22,7 @@ assets/<cluster>/           source files plus their .txt sidecars
 inbox/ingest/               drop zone for source documents to ingest
 notes/                      optional notes written by humans
 journal/YYYY-MM-DD.md       optional: the human's day note, paired with the daily log
+plans/<TICKET> Plan.md      optional: agent plans, the handoff between planning, implementing and verifying
 templates/                  starting points for every note type
 scripts/                    lint, fact check, metrics, text extraction, schedule
 ```
@@ -81,7 +82,7 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 **Frontmatter** (`templates/Issue Log.md`; the lint enforces the lists from `brain.json`): `issue`, `tracker` (URL), `human` (optional link to a human note), `repositories`, `role` (`author` | `reviewer` | `advisor`), `branches` (`repo:branch`), `prs` (URLs), `status` (`backlog` | `in progress` | `in review` | `in QA` | `merged` | `done` | `advised`), `updated`.
 
 **Write:**
-1. **Find or create** from the template. The header under the H1 lists the human note link (or `none`), the tracker link, every branch (with repo) and every PR. Add branches and PRs the moment they exist. If you keep PR reviews in their own human note, add `review note: [[PROJ-123 Review]]` once that note exists (not before: the lint rejects a link to a missing note).
+1. **Find or create** from the template. The header under the H1 lists the human note link (or `none`), the tracker link, every branch (with repo) and every PR. Add branches and PRs the moment they exist. If you keep PR reviews in their own human note, add `review note: [[PROJ-123 Review]]` once that note exists, and likewise `plan note: [[PROJ-123 Plan]]` (Plans). Not before: the lint rejects a link to a missing note.
 2. **Log.** Under `## log`, newest first, add or reuse a plain `### YYYY-MM-DD` heading (no links in date headings). One bullet per unit of work, starting with the repo in backticks: `` `app` 14:05 · what changed, SHAs, decisions, the human's calls ``. Link the first mention of each PR and each other ticket in a bullet: a PR as `[app #42](https://github.com/OWNER/app/pull/42)`, a ticket as `[[AI PROJ-124]]` when it has an issue log and as its tracker link otherwise. Headings, frontmatter and code spans don't count. Record what a later session can't cheaply re derive. Not a transcript. Tag the bullet when a codebase cluster was involved (Measuring).
 3. **Summary.** Rewrite `## summary` in place every time: current state only (what, PRs, open items, next, gotchas), **12 lines or fewer**. Bump `updated`.
 4. **Daily pointer.** One line per ticket per day on today's daily log.
@@ -101,6 +102,21 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 	- under `## Tickets`, one line per ticket worked that day, updated in place: `- [[AI PROJ-123]] · what moved`
 	- at the end of the day, under `## Wrap up`, a few bullets summarizing the daily log
 - **No detail in the journal.** Decisions, SHAs, explanations and plans live in issue logs, clusters and human notes; the journal links to them.
+
+## Plans (optional)
+
+`plans/<TICKET> Plan.md` (`templates/Plan.md`) holds every plan agents write for a ticket, one note per ticket. It's for working with several AIs: one plans, another implements, a third verifies, and the plan note is the handoff, so none of them needs another's chat. Skip this section if you don't split work that way.
+- **Every plan goes in.** File it as soon as the human sees it (`Status: draft`) and set `approved` when they approve it. A plan never stays only in chat or in a tool's own plan file. A tool's working todo list isn't a plan.
+- **One heading per plan:** `# Plan (YYYY-MM-DD)`, newest at the bottom. A revised draft replaces the draft's text. Once a plan is approved, a new plan gets a new heading and the old one becomes `superseded`.
+- **Take the plan wholesale.** Paste it under `## Plan` exactly as the planning tool wrote it: no rewording, reordering or trimming. Only demote its headings so its top level is `###`. What the handoff needs goes beside it:
+	- `Status:` `draft` | `approved` | `in progress` | `implemented` | `changes needed` | `verified` | `superseded` | `dropped`, then `Planned:`, `Implemented:` and `Verified:` lines with the date and the tool and model.
+	- `## Additions`, only for what the plan lacks that another AI needs: the human's calls from the chat, conventions, how to verify.
+	- `## Progress`, one checkbox per step of the plan, named as the plan names it.
+	- `## Deviations`, written by the implementer.
+- **Implementer:** works from the newest `approved` plan, sets `in progress`, checks off `## Progress` with SHAs, records anything done differently under `## Deviations` with why, never edits the plan text, and ends at `implemented`.
+- **Verifier:** checks every step against the diff and runs the plan's checks, writes the result where you keep reviews (a review note, or the issue log) and links it from `Verified:`, then sets `verified` or `changes needed`.
+- **Links:** the issue log header gets `plan note: [[PROJ-123 Plan]]`, and its summary links the current plan: `- **plan:** [[PROJ-123 Plan#Plan (YYYY-MM-DD)]] · <status>`.
+- **Archive:** when the ticket closes, move the plan note to `plans/_archive/`. Wikilinks keep working.
 
 ## Codebase facts
 

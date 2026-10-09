@@ -95,6 +95,7 @@ cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py. Tag is
 | "Why is this code like this?" | Follows blame → PR → review threads → ticket, and keeps a hard won answer as a fact |
 | "Run the checks" | `lint_brain.py --all` and `check_facts.py` |
 | "Is the Demo-Dev cluster paying off?" | `brain_metrics.py` for the window since the last review, read against the baseline |
+| "Plan PROJ-123", then "implement the plan" and "verify it" in other tools (optional plans) | Files the plan in `plans/` as written; each tool records its part there |
 | "Wrap up the day" (optional journal) | Summarizes today's daily log into the journal, below the divider |
 | "What's coming up?" (optional schedule) | Scans your notes for new dates and asks about each, then prints due and coming up |
 
@@ -106,12 +107,17 @@ You don't need all of it on day one:
 3. **Add a codebase cluster** once you notice the same gotcha being rediscovered. Take a baseline when you seed it and tag issue logs from day one, so the first review has numbers.
 4. **Add a journal** if you want a note of your own for each day, linked to the agents' daily log (below).
 5. **Add the schedule** if dates keep slipping through your notes (below).
+6. **Add plan notes** if you plan in one AI and implement or verify in another (below).
 
 ## Optional: a journal
 
 `journal/YYYY-MM-DD.md` is your note for the day: meetings, decisions, what you worked on. It pairs with the agents' daily log for the same date, each linking the other. Above the `---` divider is yours and agents never touch it. Below it, agents keep a short list: the schedule report (if you use one), one line per ticket worked that day linking its issue log, and an end of day wrap up summarizing the daily log. Detail stays in the brain, so the journal stays readable. Rules: `brain/RULES.md` → Journal.
 
 The date scan reads `journal/` along with `notes/`, so dates you write there reach the schedule.
+
+## Optional: plan notes
+
+If you plan with one AI, implement with another and verify with a third, `plans/<TICKET> Plan.md` is the handoff. Each plan goes in exactly as the planning tool wrote it, never reformatted. Around it sit a status, who did each phase, a checkbox per step for the implementer, anything the plan lacks that another AI needs, and the implementer's deviations. The verifier checks the work against it and records the result. Rules: `brain/RULES.md` → Plans.
 
 ## Optional: a schedule
 
@@ -138,7 +144,8 @@ assets/                   source files and their .txt sidecars
 inbox/ingest/             drop zone for documents to ingest
 notes/                    notes written by humans (optional)
 journal/                  your day notes, paired with the daily logs (optional)
-templates/                hub, leaf, code facts leaf, issue log, daily log, journal entry, schedule
+plans/                    agent plans, the handoff between AIs (optional)
+templates/                hub, leaf, code facts leaf, issue log, daily log, journal entry, plan, schedule
 scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ pdf_text.swift),
                           schedule.py and date_scan.py (optional schedule), tests
 hooks/pre-commit          secrets, file size, lint
