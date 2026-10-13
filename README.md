@@ -132,7 +132,7 @@ If your agent has calendar or tracker tools, it can also add one off calendar ev
 - **The effort is on the way in.** Ingest and logging take agent work, and quality depends on the agent following `RULES.md`. The lint checks the mechanical parts, not judgment.
 - **grep is literal.** The hub maps bridge wording; past a few hundred notes you may want a vector fallback.
 - **Without docling, PDF tables extract column by column.** Install docling, or check table facts against the original. Even docling's tables are worth checking where cells merge.
-- **docling is heavy.** It downloads layout and OCR models on first use and takes about 20 seconds to start; `--fast` skips it.
+- **docling is heavy.** About 1.7 GB on disk (1.2 GB installed plus 0.5 GB of layout and OCR models it downloads on first use), and about 20 seconds to start each run; `--fast` skips it. Worth it if you ingest PDFs with tables or scans; skip it if you're only trying the kit or logging tickets.
 - **A change flag means "this file changed", not "this fact is wrong".** Anchor to symbols rather than busy files to keep the noise down.
 
 ## Layout
