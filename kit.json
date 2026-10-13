@@ -1,0 +1,133 @@
+{
+	"kit": "ai-brain-starter",
+	"format": 1,
+	"paths": {
+		"brain": "brain",
+		"assets": "assets",
+		"inbox": "inbox/ingest",
+		"notes": "notes",
+		"journal": "journal",
+		"plans": "plans",
+		"templates": "templates",
+		"scripts": "scripts",
+		"hooks": "hooks"
+	},
+	"components": {
+		"core": {
+			"optional": false,
+			"describe": "The rules agents follow, the agent pointer files, the config, and the hub, leaf, issue log and daily log templates.",
+			"files": [
+				{"path": "brain/RULES.md", "kind": "rules"},
+				{"path": "AGENTS.md", "kind": "rules"},
+				{"path": "CLAUDE.md", "kind": "rules"},
+				{"path": "brain.json", "kind": "config"},
+				{"path": "templates/Index.md", "kind": "template"},
+				{"path": "templates/Hub.md", "kind": "template"},
+				{"path": "templates/Leaf.md", "kind": "template"},
+				{"path": "templates/Issue Log.md", "kind": "template"},
+				{"path": "templates/Daily Log.md", "kind": "template"}
+			]
+		},
+		"lint": {
+			"optional": false,
+			"describe": "The brain lint, its config loader (other scripts use it too) and the pre-commit hook.",
+			"files": [
+				{"path": "scripts/lint_brain.py", "kind": "code"},
+				{"path": "scripts/brainconfig.py", "kind": "code"},
+				{"path": "scripts/test_lint_brain.py", "kind": "code"},
+				{"path": "hooks/pre-commit", "kind": "code"}
+			]
+		},
+		"ingest": {
+			"optional": true,
+			"describe": "Turning documents into clusters: the text sidecar scripts (docling when installed) and the inbox drop folder.",
+			"files": [
+				{"path": "scripts/asset_text.py", "kind": "code"},
+				{"path": "scripts/docling_text.py", "kind": "code"},
+				{"path": "scripts/pdf_text.swift", "kind": "code"},
+				{"path": "scripts/test_asset_text.py", "kind": "code"},
+				{"path": "inbox/ingest/.gitkeep", "kind": "scaffold"}
+			]
+		},
+		"code-facts": {
+			"optional": true,
+			"describe": "Facts about a codebase anchored to files and symbols, and the check that flags them when the code changes.",
+			"requires": ["lint"],
+			"files": [
+				{"path": "scripts/check_facts.py", "kind": "code"},
+				{"path": "scripts/test_check_facts.py", "kind": "code"},
+				{"path": "templates/Code Facts Leaf.md", "kind": "template"}
+			]
+		},
+		"metrics": {
+			"optional": true,
+			"describe": "Counting [used], [rediscovered] and [miss] tags for scheduled reviews of the brain.",
+			"requires": ["lint"],
+			"files": [
+				{"path": "scripts/brain_metrics.py", "kind": "code"},
+				{"path": "scripts/test_brain_metrics.py", "kind": "code"}
+			]
+		},
+		"journal": {
+			"optional": true,
+			"describe": "A human day note paired with each daily log.",
+			"files": [
+				{"path": "templates/Journal Entry.md", "kind": "template"}
+			]
+		},
+		"plans": {
+			"optional": true,
+			"describe": "Plan notes: the handoff between planning, implementing and verifying AIs.",
+			"files": [
+				{"path": "templates/Plan.md", "kind": "template"}
+			]
+		},
+		"schedule": {
+			"optional": true,
+			"describe": "Everything dated in one list, the date scan, and the due and coming up report.",
+			"requires": ["lint"],
+			"files": [
+				{"path": "scripts/schedule.py", "kind": "code"},
+				{"path": "scripts/date_scan.py", "kind": "code"},
+				{"path": "scripts/test_schedule.py", "kind": "code"},
+				{"path": "scripts/test_date_scan.py", "kind": "code"},
+				{"path": "templates/Schedule.md", "kind": "template"}
+			]
+		},
+		"examples": {
+			"role": "example",
+			"describe": "Fictional examples for trying the kit. Never adopted into a vault.",
+			"files": [
+				{"path": "brain/INDEX.md", "kind": "rules"},
+				{"path": "brain/Schedule.md", "kind": "rules"},
+				{"path": "brain/Campus-Grant.md", "kind": "rules"},
+				{"path": "brain/Campus-Grant.identity.md", "kind": "rules"},
+				{"path": "brain/Campus-Grant.requirements.md", "kind": "rules"},
+				{"path": "brain/Campus-Grant.amendment-1.md", "kind": "rules"},
+				{"path": "brain/Demo-Dev.md", "kind": "rules"},
+				{"path": "brain/Demo-Dev.build.md", "kind": "rules"},
+				{"path": "brain/Demo-Dev.testing.md", "kind": "rules"},
+				{"path": "brain/daily/AI Log 2026-10-06.md", "kind": "rules"},
+				{"path": "brain/issues/AI DEMO-1.md", "kind": "rules"},
+				{"path": "journal/2026-10-06.md", "kind": "rules"},
+				{"path": "notes/Campus Grant.md", "kind": "rules"},
+				{"path": "assets/Campus-Grant/Campus Grant RFP.docx", "kind": "scaffold"},
+				{"path": "assets/Campus-Grant/Campus Grant RFP.docx.txt", "kind": "scaffold"},
+				{"path": "assets/Campus-Grant/Campus Grant Amendment 1.docx", "kind": "scaffold"},
+				{"path": "assets/Campus-Grant/Campus Grant Amendment 1.docx.txt", "kind": "scaffold"}
+			]
+		},
+		"kit": {
+			"role": "kit",
+			"describe": "The kit's own files: its README, this manifest, the adoption procedure and the sync script. They stay in the kit; a vault runs them from the kit's clone.",
+			"files": [
+				{"path": "README.md", "kind": "rules"},
+				{"path": "ADOPT.md", "kind": "rules"},
+				{"path": "kit.json", "kind": "config"},
+				{"path": ".gitignore", "kind": "config"},
+				{"path": "scripts/kit_sync.py", "kind": "code"},
+				{"path": "scripts/test_kit_sync.py", "kind": "code"}
+			]
+		}
+	}
+}
