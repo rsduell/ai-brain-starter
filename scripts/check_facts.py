@@ -15,7 +15,8 @@ the default branch yet. Each fact gets a status:
 	missing      an anchor file or symbol is gone
 	recheck due  a fact without anchors is past its recheck date
 	malformed    unknown repo, unknown SHA, branch gone, or nothing to check
-Prints only facts that are not ok. Never edits notes; exit code is always 0.
+	superseded   the heading carries a `[superseded ...]` marker; its anchors are not checked
+Prints only facts that are not ok or superseded. Never edits notes; exit code is always 0.
 """
 import datetime
 import os
@@ -29,7 +30,7 @@ import brainconfig  # noqa: E402
 from lint_brain import parse_facts, parse_frontmatter  # noqa: E402
 
 PR_RE = re.compile(r"\(#(\d+)\)")
-ORDER = ["malformed", "missing", "changed", "recheck due", "ok"]
+ORDER = ["malformed", "missing", "changed", "recheck due", "ok", "superseded"]
 
 
 def git(path, *args):
@@ -56,6 +57,8 @@ def repo_info(key, path):
 
 def check_fact(fact, repos, today):
 	"""Return (status, [detail lines])."""
+	if "[superseded" in fact["heading"]:
+		return "superseded", []
 	if not fact["anchors"]:
 		if fact["recheck"]:
 			return ("recheck due", ["recheck date %s" % fact["recheck"]]) if fact["recheck"] <= today else ("ok", [])
@@ -154,7 +157,7 @@ def main(argv):
 	repos, results = check(root, notes or anchored_notes(root, cfg), cfg, fetch=fetch)
 	for info in repos.values():
 		print("%-26s %-26s %-10s %s" % (info["name"], info["ref"] or "(branch not found)", info["sha"], info["date"]))
-	flagged = [r for r in results if r["status"] != "ok"]
+	flagged = [r for r in results if r["status"] not in ("ok", "superseded")]
 	for r in sorted(flagged, key=lambda r: (ORDER.index(r["status"]), str(r["path"]), r["line"])):
 		rel = os.path.relpath(r["path"], root) if Path(r["path"]).is_absolute() else r["path"]
 		print("%s:%d  %s  %s" % (rel, r["line"], r["status"], r["heading"]))

@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import brainconfig  # noqa: E402
 import schedule  # noqa: E402
 
 D = dt.date.fromisoformat
@@ -159,6 +160,21 @@ class ScheduleTest(unittest.TestCase):
 		out = schedule.report(self.root, D("2026-10-07"))
 
 		self.assertIn("Compact old log sections (promote first) in 1 issue log: [[AI PROJ-1]]", out)
+
+	def test_superseded_fact_is_not_a_recheck_item(self):
+		(self.root / "brain" / "Demo-Dev.leaf.md").write_text(
+			"---\nanchored: true\n---\n\n"
+			"### Old fact [superseded 2026-10-13 → [[Demo-Dev.leaf#New fact|new]]: replaced]\n"
+			"- anchors: `nosuchrepo:src/Gone.kt`\n"
+			"- verified: 2026-10-06 · nosuchrepo abc1234\n"
+			"- source: [[AI PROJ-1]] 2026-10-06\n"
+			"- scope: team\n"
+			"Body.\n"
+		)
+
+		items = schedule.fact_items(self.root, dict(brainconfig.DEFAULTS), D("2026-10-13"))
+
+		self.assertEqual(items, [])
 
 
 if __name__ == "__main__":

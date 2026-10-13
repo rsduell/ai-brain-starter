@@ -143,7 +143,7 @@ One to three lines of body.
 - **Scope:** `team` (true for everyone; a candidate for the repo's own docs, but never pushed there without the owner), `personal` (one person's workflow) or `provisional` (seen once, unconfirmed).
 - **Repo docs come first.** Don't copy what the repo's own README or agent docs already say. The hub lists those docs instead.
 
-**Checking.** Run `python3 scripts/check_facts.py` (add `--fetch` to update `origin` first) at the start of work in a repo the cluster covers. It lists facts whose anchored code changed, disappeared, or is due a recheck, with the commits and PR numbers behind each change. It never edits notes. Recheck a flagged fact only when a task needs it: read the code, find out why it changed (Finding the why), then bump `verified` or supersede the fact.
+**Checking.** Run `python3 scripts/check_facts.py` (add `--fetch` to update `origin` first) at the start of work in a repo the cluster covers. It lists facts whose anchored code changed, disappeared, or is due a recheck, with the commits and PR numbers behind each change. A fact whose heading carries a `[superseded ...]` marker is history: its anchors aren't checked, and neither the checker nor the schedule report lists it. It never edits notes. Recheck a flagged fact only when a task needs it: read the code, find out why it changed (Finding the why), then bump `verified` or supersede the fact.
 
 ## Promotion
 

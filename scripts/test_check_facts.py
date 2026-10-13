@@ -1,4 +1,6 @@
 """Tests for check_facts.py. Run: python3 -m unittest discover -s scripts"""
+import contextlib
+import io
 import os
 import subprocess
 import sys
@@ -21,9 +23,9 @@ def commit(repo, message):
 	return git(repo, "rev-parse", "--short", "HEAD")
 
 
-def fact(anchors="`app:src/Flags.kt`", verified="2026-10-06 · app {sha}", extra=""):
+def fact(anchors="`app:src/Flags.kt`", verified="2026-10-06 · app {sha}", extra="", heading="Device builds need FLAG on"):
 	return (
-		"### Device builds need FLAG on\n"
+		"### " + heading + "\n"
 		"- anchors: %s\n"
 		"- verified: %s\n"
 		"- source: [[AI PROJ-1]] 2026-10-06\n"
@@ -31,6 +33,9 @@ def fact(anchors="`app:src/Flags.kt`", verified="2026-10-06 · app {sha}", extra
 		"%s"
 		"Body.\n"
 	) % (anchors, verified, extra)
+
+
+SUPERSEDED_HEADING = "Device builds need FLAG on [superseded 2026-10-13 → [[note#New|new]]: flag removed]"
 
 
 class CheckDevFactsTest(unittest.TestCase):
@@ -137,6 +142,26 @@ class CheckDevFactsTest(unittest.TestCase):
 		result = self.run_check(text)
 
 		self.assertEqual(result["status"], "malformed")
+
+	def test_superseded_fact_with_deleted_anchor_is_superseded(self):
+		(self.repo / "src" / "Flags.kt").unlink()
+		commit(self.repo, "Remove flags")
+		text = fact(heading=SUPERSEDED_HEADING).format(sha=self.sha)
+
+		result = self.run_check(text)
+
+		self.assertEqual(result["status"], "superseded")
+
+	def test_superseded_fact_is_not_flagged(self):
+		(self.repo / "src" / "Flags.kt").unlink()
+		commit(self.repo, "Remove flags")
+		self.note.write_text("---\nanchored: true\n---\n\n" + fact(heading=SUPERSEDED_HEADING).format(sha=self.sha))
+		out = io.StringIO()
+
+		with contextlib.redirect_stdout(out):
+			check_facts.main([str(self.note), "--repo", "app=%s" % self.repo])
+
+		self.assertIn("1 facts checked, 0 need attention.", out.getvalue())
 
 
 if __name__ == "__main__":

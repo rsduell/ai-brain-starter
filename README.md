@@ -61,7 +61,7 @@ Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl
 	```
 	cp -R ai-brain-starter ~/my-brain && cd ~/my-brain
 	git init && git config core.hooksPath hooks
-	python3 -m unittest discover -s scripts      # 61 tests should pass
+	python3 -m unittest discover -s scripts      # 64 tests should pass
 	python3 scripts/lint_brain.py --all          # should print nothing
 	```
 2. Edit `brain.json`: your ticket key pattern (Linear `ABC-123`, Jira, `GH-123`), the statuses you use, and where your code repos live (`repos` or `projects_dir`).

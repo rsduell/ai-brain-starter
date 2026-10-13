@@ -172,7 +172,7 @@ def fact_items(root, cfg, today):
 		return ["Fact check failed (%s): run `python3 scripts/check_facts.py`" % e.__class__.__name__]
 	by_leaf = {}
 	for r in results:
-		if r["status"] != "ok":
+		if r["status"] not in ("ok", "superseded"):
 			by_leaf.setdefault(Path(r["path"]).stem, []).append(r["status"])
 	return ["Recheck %d fact%s in [[%s]] (%s): `python3 scripts/check_facts.py`" % (
 		len(v), "" if len(v) == 1 else "s", leaf, ", ".join(sorted(set(v)))) for leaf, v in sorted(by_leaf.items())]
