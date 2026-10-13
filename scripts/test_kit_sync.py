@@ -221,6 +221,27 @@ class KitSyncTest(unittest.TestCase):
 
 		self.assertEqual(actions["brain/RULES.md"]["action"], "vault-edited")
 
+	def test_relative_vault_path_still_sees_vault_files(self):
+		(self.vault / "CLAUDE.md").write_text("The vault's own rules.\n")
+		kit_sync.init(str(self.vault), str(self.kit))
+		cwd = os.getcwd()
+		os.chdir(self.vault)
+		try:
+			actions = {e["path"]: e for e in kit_sync.plan(".", str(self.kit))}
+		finally:
+			os.chdir(cwd)
+
+		self.assertEqual(actions["CLAUDE.md"]["action"], "exists-in-vault")
+
+	def test_preview_map_applies_without_writing_a_lock(self):
+		before = self.snapshot()
+
+		actions = {e["path"]: e for e in kit_sync.plan(str(self.vault), str(self.kit), path_map={"scripts": "_scripts"}, components={"journal": "declined"})}
+
+		self.assertEqual(actions["scripts/lint_brain.py"]["vault_path"], "_scripts/lint_brain.py")
+		self.assertEqual(actions["templates/Journal Entry.md"]["action"], "declined")
+		self.assertEqual(self.snapshot(), before)
+
 	# apply, resolve, decide, init, check (C3)
 
 	def test_apply_writes_file_and_lock_base(self):

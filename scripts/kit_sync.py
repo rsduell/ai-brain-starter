@@ -6,7 +6,8 @@ needs, applying what is safe, and recording answers. State lives in the vault's 
 
 Usage (from the kit's clone; --kit defaults to the clone this script is in):
 	python3 scripts/kit_sync.py init    --vault DIR [--map brain=_ai-brain]... [--component journal=declined]...
-	python3 scripts/kit_sync.py plan    --vault DIR [--json]            changes nothing
+	python3 scripts/kit_sync.py plan    --vault DIR [--json] [--map ...] [--component ...]
+	                                    changes nothing; --map and --component preview answers before init
 	python3 scripts/kit_sync.py apply   --vault DIR (--safe | PATH...)  only new, update-clean, update-merge
 	python3 scripts/kit_sync.py resolve --vault DIR PATH [--take-kit]   after an answer: keep the vault file as merged, or take the kit's
 	python3 scripts/kit_sync.py decide  --vault DIR --id ID --choice vault|kit|merged|skip --vault-text T --kit-text T
@@ -72,7 +73,8 @@ def blob_bytes(kit, sha):
 
 
 def hash_file(kit, path):
-	return git(kit, "hash-object", "--", str(path)).stdout.decode().strip()
+	# Absolute, or git -C <kit> would hash the kit's own file of the same relative name.
+	return git(kit, "hash-object", "--", str(Path(path).resolve())).stdout.decode().strip()
 
 
 def is_executable(kit, commit, path):
@@ -210,8 +212,11 @@ def classify(vault, kit, manifest, lock, commit, name, component, item):
 	return entry
 
 
-def plan(vault, kit):
+def plan(vault, kit, path_map=None, components=None):
+	"""What each kit file needs. path_map and components preview answers in memory; nothing is written."""
 	lock = load_lock(vault) or empty_lock(kit)
+	lock["path_map"].update(path_map or {})
+	lock["components"].update(components or {})
 	commit = head(kit)
 	manifest = load_manifest(kit, commit)
 	out, seen = [], set()
@@ -345,8 +350,8 @@ def check(vault, kit):
 
 def print_plan(vault, kit, entries):
 	lock = load_lock(vault) or empty_lock(kit)
-	print("kit %s at %s · vault %s · lock %s" % (
-		short_home(kit), head(kit)[:7], vault, (lock["kit_commit"] or "none")[:7]))
+	applied = lock["kit_commit"][:7] if lock["kit_commit"] else ("not applied yet" if Path(vault, LOCK_NAME).exists() else "none")
+	print("kit %s at %s · vault %s · lock %s" % (short_home(kit), head(kit)[:7], vault, applied))
 	undecided = sorted({e["component"] for e in entries if e.get("component_state") == "undecided"})
 	if undecided:
 		print("undecided optional components (ask, then init --component NAME=adopted|declined): " + ", ".join(undecided))
@@ -387,6 +392,8 @@ def main(argv):
 			p.add_argument("--component", action="append", help="name=adopted|declined")
 		elif name == "plan":
 			p.add_argument("--json", action="store_true")
+			p.add_argument("--map", action="append", help="preview a folder map without writing it")
+			p.add_argument("--component", action="append", help="preview a component choice without writing it")
 		elif name == "apply":
 			p.add_argument("--safe", action="store_true", help="every safe file in adopted components")
 			p.add_argument("paths", nargs="*")
@@ -401,12 +408,12 @@ def main(argv):
 			p.add_argument("--note")
 			p.add_argument("--path", action="append", default=[])
 	args = parser.parse_args(argv)
-	vault, kit = str(Path(args.vault).expanduser()), str(Path(args.kit).expanduser())
+	vault, kit = str(Path(args.vault).expanduser().resolve()), str(Path(args.kit).expanduser().resolve())
 	if args.command == "init":
 		init(vault, kit, parse_pairs(args.map, "--map"), parse_pairs(args.component, "--component"))
 		return 0
 	if args.command == "plan":
-		entries = plan(vault, kit)
+		entries = plan(vault, kit, parse_pairs(args.map, "--map"), parse_pairs(args.component, "--component"))
 		if args.json:
 			print(json.dumps(entries, indent="\t"))
 		else:

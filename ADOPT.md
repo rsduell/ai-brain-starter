@@ -16,6 +16,7 @@ python3 <kit>/scripts/kit_sync.py <command> --vault .
 
 - **Ask, never settle.** Wherever the vault and the kit do something differently, ask the human. Don't pick a side because one looks newer or tidier, and never call the kit's way the default or the correct one.
 - **Label every side.** Use the question format below, every time.
+- **Report only what you read.** Every survey finding and every `Vault:` line comes from a file you actually opened; quote the line or name the setting. Never infer a vault rule you haven't seen written down or laid out.
 - **Nothing is written before the answers.** `plan` changes nothing. Files change only through `apply` and `resolve`, after the human has answered.
 - **Never delete or overwrite vault content** outside `apply` and `resolve`. `removed-in-kit` is only reported.
 - **Never adopt the examples** (Campus-Grant, Demo-Dev, `AI DEMO-1`, the sample journal and note, `brain/INDEX.md`, `brain/Schedule.md`). `plan` marks them `example`.
@@ -32,7 +33,8 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 ```
 - The vault's source is the file (or Obsidian setting) where the vault's way is written down, or "existing" when it's only how the files are laid out.
 - The kit's source is the kit file and section, with the kit commit.
-- Ask at most four questions at once, most consequential first.
+- When the vault has no way of its own (an optional part it has never done), write `Vault: none found` and say what you looked for.
+- Ask at most four questions at once, most consequential first, in rounds. A question that depends on another's answer waits for it, and says so ("asked only if 1 keeps the journal").
 - For a file conflict, show the differing lines from both sides, labeled the same way.
 
 ## First adoption
@@ -45,7 +47,15 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 	- Git: is it a repo, its `.gitignore`, `core.hooksPath` and any existing hooks
 	- note names used more than once (wikilinks need unique names): `find . -name '*.md' -not -path './.git/*' | sed 's|.*/||' | sort | uniq -d`
 	- the tracker it uses for tickets, if any (Linear, Jira, GitHub issues), and its key pattern
+	- its naming habits: leading underscores on support folders (`_attachments`), capitalized note folders, and so on
 3. **Propose the folder map and the parts to adopt.** For each kit folder in `kit.json` â†’ `paths` (`brain`, `assets`, `inbox`, `notes`, `journal`, `plans`, `templates`, `scripts`, `hooks`), propose the vault folder it maps to: the vault's existing folder where one plays that role, else the kit's name. For each optional component (ingest, code-facts, metrics, journal, plans, schedule), say what it does and whether the vault seems to want it. Ask, in the question format, about each one where the vault already has its own way.
+	- **Preview before writing:** `kit_sync.py plan --vault . --map brain=_brain --component journal=adopted ...` shows the plan under a proposed map without writing anything, so `exists-in-vault` questions can go in the first round.
+	- **Names:** new folders follow the vault's naming habit; ask when it's unclear.
+	- **A map value replaces the kit folder's whole path.** `inbox` is `inbox/ingest` in the kit, so `--map inbox=_inbox/ingest` keeps the ingest level and `--map inbox=_inbox` drops it.
+	- **`scripts` must map to a top level folder.** `brainconfig.py` finds `brain.json` in the folder above the scripts.
+	- **Templates and Obsidian:** the kit's templates use `YYYY-MM-DD` placeholders, not Obsidian's `{{date}}`. Mapping `templates` onto Obsidian's templates folder puts them in its template picker; offer a subfolder or a separate folder, and ask.
+	- **Duplicate note names:** propose renaming one (and updating links to it) or linking those notes by path, ask, and record the answer in `RULES.local.md`.
+	- **No tracker:** issue logs have nothing to key on. Say so, ask whether the vault keeps daily logs only, and record the answer in `RULES.local.md`; `brain.json` keeps the kit's pattern unused.
 4. **Record the answers:**
 	```
 	kit_sync.py init --vault . --map brain=_ai-brain --map assets=_assets --component journal=declined ...
