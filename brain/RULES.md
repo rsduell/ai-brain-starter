@@ -2,6 +2,8 @@
 
 **This file is the single home for every rule about reading and writing the brain.** `AGENTS.md` and `CLAUDE.md` at the repo root point here. Don't copy these rules anywhere else: copies drift. Project specific settings (ticket key pattern, statuses, repo paths) live in `brain.json`.
 
+**A vault may differ.** If `RULES.local.md` sits beside this file, read it too. It records where this vault does things differently (its folders, the optional parts it uses, its own conventions), and where the two disagree, it wins. A vault adopted from the kit keeps this file unchanged so kit updates apply cleanly: local changes go in `RULES.local.md`, never here (`ADOPT.md`).
+
 The brain is an agent written knowledge base in plain Markdown. Agents build it as they work and answer questions from it. It has three parts:
 - **Clusters:** facts extracted from source documents, or learned about a codebase, organized for the questions people ask.
 - **Issue logs:** everything agents did on one ticket.

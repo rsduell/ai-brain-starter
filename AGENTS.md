@@ -1,6 +1,6 @@
 # Agent instructions
 
-This repo is an agent written knowledge base (a "brain"). Before reading or writing anything under `brain/`, read `brain/RULES.md`. It is the only copy of the rules.
+This repo is an agent written knowledge base (a "brain"). Before reading or writing anything under `brain/`, read `brain/RULES.md`. It is the only copy of the rules. If `RULES.local.md` sits beside it, read that too: it's where this vault differs, and it wins.
 
 In short:
 - **Answering:** start at `brain/INDEX.md`, read the cluster hub, grep the cluster, open only the matching leaf.
@@ -9,4 +9,5 @@ In short:
 - **Plans:** if `plans/` exists, every plan an agent writes goes in its ticket's plan note, pasted wholesale, and the implementer and verifier record their part there (RULES.md → Plans).
 - **Dates:** if `brain/Schedule.md` exists, dated things go there (RULES.md → Schedule).
 - **Documents in `inbox/ingest/`:** ingest them into a cluster (RULES.md → Ingesting documents).
+- **Adopting this kit into a vault, or updating a vault from it:** follow `ADOPT.md`.
 - **Commit** explicit paths after each unit of work. The pre-commit hook lints what you staged.

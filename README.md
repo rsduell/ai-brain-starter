@@ -61,7 +61,7 @@ Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl
 	```
 	cp -R ai-brain-starter ~/my-brain && cd ~/my-brain
 	git init && git config core.hooksPath hooks
-	python3 -m unittest discover -s scripts      # 68 tests should pass
+	python3 -m unittest discover -s scripts      # 90 tests should pass
 	python3 scripts/lint_brain.py --all          # should print nothing
 	```
 2. Edit `brain.json`: your ticket key pattern (Linear `ABC-123`, Jira, `GH-123`), the statuses you use, and where your code repos live (`repos` or `projects_dir`).
@@ -70,6 +70,16 @@ Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl
 	- "What did we learn on DEMO-1?"
 	- "Is the Demo-Dev cluster paying off?" (it should run `brain_metrics.py` and read the numbers against the hub's baseline)
 4. When you've seen how it works, delete the examples: `Campus-Grant*`, `Demo-Dev*`, `notes/Campus Grant.md`, `assets/Campus-Grant/`, `issues/AI DEMO-1.md`, the example daily log and `journal/2026-10-06.md`. Update `brain/INDEX.md`. Clear the example entries out of `brain/Schedule.md`, or delete it if you won't use a schedule.
+
+## Adopting it into a vault you already have
+
+Keep the kit in its own clone, open an agent in your vault, and say "adopt the kit from `~/path/to/ai-brain-starter`". The agent follows [`ADOPT.md`](ADOPT.md):
+1. It surveys the vault (folders, existing agent rules, Obsidian settings, Git, duplicate note names) and proposes where each kit folder goes in it.
+2. Wherever the vault and the kit do something differently, it asks you, showing a `Vault:` line and a `Kit:` line with where each comes from. Nothing is written before you answer.
+3. It copies the parts you adopt **unchanged**, and writes everything your vault does differently into `RULES.local.md` beside the kit's `RULES.md`. Agents read both, and yours wins.
+4. `kit.lock.json` in the vault records the kit commit, the folder map, the parts you took or declined, and each answer.
+
+**Updating:** pull the kit and say "update from the kit". `scripts/kit_sync.py` sorts every file: changes the kit made to files you never touched apply after one yes, edits on both sides merge when they don't overlap, and you're asked only about real conflicts and about past answers whose kit side has changed. The examples are never copied.
 
 ## Using it while you work in other repos
 
@@ -139,6 +149,8 @@ If your agent has calendar or tracker tools, it can also add one off calendar ev
 
 ```
 AGENTS.md / CLAUDE.md     tell agents to read brain/RULES.md
+ADOPT.md                  how an agent adopts the kit into a vault, and updates it later
+kit.json                  every kit file by component, for kit_sync.py
 brain.json                project settings
 brain/                    the agent notes (RULES.md, INDEX.md, clusters, issues/, daily/)
 assets/                   source files and their .txt sidecars
@@ -146,8 +158,8 @@ inbox/ingest/             drop zone for documents to ingest
 notes/                    notes written by humans (optional)
 journal/                  your day notes, paired with the daily logs (optional)
 plans/                    agent plans, the handoff between AIs (optional)
-templates/                hub, leaf, code facts leaf, issue log, daily log, journal entry, plan, schedule
+templates/                index, hub, leaf, code facts leaf, issue log, daily log, journal entry, plan, schedule
 scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ docling_text.py, pdf_text.swift),
-                          schedule.py and date_scan.py (optional schedule), tests
+                          schedule.py and date_scan.py (optional schedule), kit_sync.py (adopting and updating), tests
 hooks/pre-commit          secrets, file size, lint
 ```
