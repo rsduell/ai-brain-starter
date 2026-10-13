@@ -46,6 +46,8 @@ When files land in `inbox/ingest/`:
 1. Read every file. Extract facts, IDs, numbers, dates, requirements (SHALL/SHOULD), pass/fail rules and deadlines, not a human summary.
 2. Move the files to `assets/<cluster>/`, keeping their names. If a file of that name exists, move the old one to `assets/_archive/<cluster>/` first.
 3. Write text sidecars: `python3 scripts/asset_text.py "assets/<cluster>"`. Spreadsheet rows come out as `r<N>`, PDF pages as `=== page N ===`. Extract from the sidecar so every fact can cite its page or row.
+	- With [docling](https://github.com/docling-project/docling) installed, the script converts PDFs, Word, PowerPoint, HTML and images with it: Markdown with real tables, OCR for scans and screenshots, page markers kept (a pptx page is a slide). Spreadsheets stay on the row extractor so `r<N>` holds. The sidecar's `source:` line names the extractor.
+	- Use docling's output by default. Add `--fast` (plain text, no docling) only for a long text only PDF where tables and scans don't matter and speed does. If a docling sidecar looks wrong (empty pages, garbled tables), compare with a `--fast` run and keep the better one.
 4. Create or update the cluster hub, and add it to `brain/INDEX.md` if new.
 5. Split facts into small leaves **by how people will ask**, not by document chapter: identity and dates, scope, evaluation, pricing, one leaf per requirement area, glossary.
 6. Every leaf wikilinks the assets it uses and its sibling leaves.
@@ -54,7 +56,7 @@ Ingest quality:
 - Cite a page or row for each fact: `RFP §L.3 p.12`, `Sheet 3B r14`.
 - Record conflicts in the source as printed and flag them. Never silently pick one.
 - Your own analysis or opinion goes in leaves tagged `derived: true`, never mixed into source fact leaves.
-- PDF tables extract column by column: check table facts against the original.
+- Tables in a docling sidecar are Markdown tables: cite a table fact by its page and row label, and check numbers from complex or merged cell tables against the original. Plain text sidecars (`PDFKit`, `pdftotext`) extract tables column by column, so check those against the original too, or regenerate with docling.
 
 ## Clusters
 

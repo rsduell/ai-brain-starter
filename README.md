@@ -34,7 +34,7 @@ So the work moves to when knowledge comes in: an agent turns sources into small 
 | **Daily logs** | The day's index, one line per ticket | `daily/AI Log 2026-10-06.md` |
 
 **Knowledge in (ingest).** Drop documents in `inbox/ingest/` and ask the agent to ingest them:
-1. It moves them to `assets/` and writes a `.txt` copy of each, with page and row markers.
+1. It moves them to `assets/` and writes a `.txt` copy of each, with page and row markers. With [docling](https://github.com/docling-project/docling) installed, PDFs, Word, PowerPoint and images keep their tables and scans get OCR.
 2. It extracts facts (not summaries), each cited.
 3. It splits them into notes **shaped by the questions people ask**.
 4. It writes a hub with a question → note map.
@@ -55,13 +55,13 @@ The full rules agents follow are in [`brain/RULES.md`](brain/RULES.md). Read tha
 
 ## Quickstart
 
-Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl` for spreadsheets, and on Linux or Windows `pdftotext` (poppler) and `pandoc` for PDFs and Word files.
+Needs Python 3.9+ and Git. Optional: `gh` (GitHub CLI) for PR lookups, `openpyxl` for spreadsheets, and [docling](https://github.com/docling-project/docling) for PDFs, Word, PowerPoint and scans (`uv tool install docling`; it needs Python 3.10+, which `uv` fetches for it). Without docling, PDFs and Word files fall back to plain text, which on Linux or Windows needs `pdftotext` (poppler) and `pandoc`.
 
 1. Copy this folder and start a repo:
 	```
 	cp -R ai-brain-starter ~/my-brain && cd ~/my-brain
 	git init && git config core.hooksPath hooks
-	python3 -m unittest discover -s scripts      # 64 tests should pass
+	python3 -m unittest discover -s scripts      # 68 tests should pass
 	python3 scripts/lint_brain.py --all          # should print nothing
 	```
 2. Edit `brain.json`: your ticket key pattern (Linear `ABC-123`, Jira, `GH-123`), the statuses you use, and where your code repos live (`repos` or `projects_dir`).
@@ -131,7 +131,8 @@ If your agent has calendar or tracker tools, it can also add one off calendar ev
 
 - **The effort is on the way in.** Ingest and logging take agent work, and quality depends on the agent following `RULES.md`. The lint checks the mechanical parts, not judgment.
 - **grep is literal.** The hub maps bridge wording; past a few hundred notes you may want a vector fallback.
-- **PDF tables extract column by column.** Check table facts against the original.
+- **Without docling, PDF tables extract column by column.** Install docling, or check table facts against the original. Even docling's tables are worth checking where cells merge.
+- **docling is heavy.** It downloads layout and OCR models on first use and takes about 20 seconds to start; `--fast` skips it.
 - **A change flag means "this file changed", not "this fact is wrong".** Anchor to symbols rather than busy files to keep the noise down.
 
 ## Layout
@@ -146,7 +147,7 @@ notes/                    notes written by humans (optional)
 journal/                  your day notes, paired with the daily logs (optional)
 plans/                    agent plans, the handoff between AIs (optional)
 templates/                hub, leaf, code facts leaf, issue log, daily log, journal entry, plan, schedule
-scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ pdf_text.swift),
+scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ docling_text.py, pdf_text.swift),
                           schedule.py and date_scan.py (optional schedule), tests
 hooks/pre-commit          secrets, file size, lint
 ```
