@@ -174,7 +174,7 @@ An untagged event is invisible to the review. Rechecks need no tag: the script r
 
 **Baseline.** When a cluster is seeded, run `python3 scripts/brain_metrics.py --cluster <Project>-Dev --baseline` (facts whose sources cite two or more issue logs, so lessons learned more than once) and record it on the hub under `## Reviews`.
 
-**Reviews.** Monthly at first, then quarterly (a [[Schedule]] entry, or a calendar reminder). Run `python3 scripts/brain_metrics.py --cluster <Project>-Dev --since <day after the previous review>` and `python3 scripts/check_facts.py`, paste the block into the hub's review log, and add a one line verdict and what you decided. Reading the numbers (small samples show direction, not proof):
+**Reviews.** Monthly at first, then quarterly (an entry in `brain/Schedule.md` if you keep one, or a calendar reminder). Run `python3 scripts/brain_metrics.py --cluster <Project>-Dev --since <day after the previous review>` and `python3 scripts/check_facts.py`, paste the block into the hub's review log, and add a one line verdict and what you decided. Reading the numbers (small samples show direction, not proof):
 - **relearned and rediscovered well under the baseline, used above zero:** paying off.
 - **rediscovered high:** sessions aren't reading the hub, or its map didn't route. Fix the TRAVERSE map, the one screen facts, or the loading instruction in your agent's global instructions.
 - **flags mostly noise** (verified bumps far above superseded markers): narrow those anchors from whole files to symbols.

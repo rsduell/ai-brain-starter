@@ -7,6 +7,7 @@ import datetime
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -44,6 +45,18 @@ FILES = {
 	"templates/Journal Entry.md": "# journal\n",
 	"brain/Example.md": "# example\n",
 }
+
+
+def bare_wikilink_lines(text):
+	"""Line numbers holding a [[wikilink]] outside code fences and code spans."""
+	out, fenced = [], False
+	for n, line in enumerate(text.splitlines(), 1):
+		if line.lstrip().startswith("```"):
+			fenced = not fenced
+			continue
+		if not fenced and "[[" in re.sub(r"`[^`]*`", "", re.sub(r"``.*?``", "", line)):
+			out.append((n, line))
+	return out
 
 
 def git(repo, *args):
@@ -111,6 +124,14 @@ class KitSyncTest(unittest.TestCase):
 
 		counted = [f["path"] for c in manifest["components"].values() for f in c["files"]]
 		self.assertEqual(sorted(listed), sorted(counted))
+
+	def test_adopted_rules_files_link_no_notes(self):
+		manifest = kit_sync.load_manifest(str(KIT_ROOT))
+		rules = [f["path"] for c in manifest["components"].values() if not c.get("role") for f in c["files"] if f["kind"] == "rules"]
+
+		bare = [(path, n) for path in rules for n, line in bare_wikilink_lines((KIT_ROOT / path).read_text())]
+
+		self.assertEqual(bare, [])
 
 	def test_examples_are_never_planned(self):
 		kit_sync.init(str(self.vault), str(self.kit))

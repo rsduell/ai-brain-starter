@@ -18,7 +18,7 @@ python3 <kit>/scripts/kit_sync.py <command> --vault .
 - **Label every side.** Use the question format below, every time.
 - **Report only what you read.** Every survey finding and every `Vault:` line comes from a file you actually opened; quote the line or name the setting. Never infer a vault rule you haven't seen written down or laid out.
 - **Nothing is written before the answers.** `plan` changes nothing. Files change only through `apply` and `resolve`, after the human has answered.
-- **Never delete or overwrite vault content** outside `apply` and `resolve`. `removed-in-kit` is only reported.
+- **Never delete or overwrite vault content** outside `apply` and `resolve`, except an edit an answer calls for (such as adding a line to the vault's own daily note template): show it, make it, and list it in the commit. `removed-in-kit` is only reported.
 - **Never adopt the examples** (Campus-Grant, Demo-Dev, `AI DEMO-1`, the sample journal and note, `brain/INDEX.md`, `brain/Schedule.md`). `plan` marks them `example`.
 - **Never edit the kit from a vault session.** If the kit itself needs a change, say so to the human.
 
@@ -62,6 +62,8 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 	kit_sync.py decide --vault . --id journal-layout --choice vault --vault-text "Journal/YYYY/MM-MMMM/" --kit-text "journal/YYYY-MM-DD.md" --note "..."
 	```
 	Give each decision a short, stable `--id`. Add `--path <kit path>` for each kit file a "keep vault" or "skip" decision covers, so a later update notices when the kit changes that file.
+	- `--choice`: `vault` keeps the vault's way, `kit` takes the kit's, `skip` leaves the part out, and `merged` is anything else (both combined, or a third way the human chose).
+	- Record every answer with `decide`, including one carried out with `resolve`: the lock keeps why, not only what.
 5. **Plan:** `kit_sync.py plan --vault .`. Then for each action that needs an answer:
 	- `exists-in-vault`: the vault has its own file where the kit's would go (often `CLAUDE.md`, `AGENTS.md`, `.gitignore` or a hook). Show both, ask, and act on the answer:
 		- keep the vault's file: `decide --choice vault --path <kit path>`
@@ -70,10 +72,11 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 	- undecided optional components: ask, then `init --component NAME=adopted|declined`, and plan again.
 6. **Apply what's safe:** `kit_sync.py apply --vault . --safe` copies every `new` file in an adopted component.
 7. **Fit the copies to the vault**, writing each difference into `RULES.local.md`, never into `RULES.md`:
+	- **Edit copies line by line.** Change only the lines that need it, and never reformat a copied file (a JSON rewrite reflows every array, and each later kit change to it becomes a conflict).
 	- `brain.json`: set `brain_dir` to the mapped brain folder, `human_dirs` to the vault's human note folders, and the ticket pattern and statuses the vault uses. This edits the copy, which is expected: config is the vault's to set.
-	- `AGENTS.md` and `CLAUDE.md` at the vault root: if the brain folder is mapped, correct their `brain/RULES.md` path, and make sure they name `RULES.local.md`.
+	- `AGENTS.md` and `CLAUDE.md` at the vault root: correct every path that names a mapped folder of an adopted part (`brain/`, `inbox/ingest/`, `journal/` and so on), drop or mark lines about declined parts, and make sure they name `RULES.local.md`. These are the pointers agents read first, so they must be right even though it makes them `vault-edited`; later kit changes to them merge.
 	- Git: `git config core.hooksPath <mapped hooks folder>` if the vault has no hook folder yet. If it already has a `pre-commit`, merge the kit's checks into it (step 5, merge). The kit's hook finds the lint in `scripts/`, or in any top level folder holding `lint_brain.py`.
-	- Create the vault's brain index from `templates/Index.md`.
+	- Create the vault's brain index from `templates/Index.md`, with its paths fitted to the folder map and its lines for declined parts dropped (no issue logs line in a vault without tickets). The index is the vault's own note from then on, not a kit copy.
 8. **Write `RULES.local.md`** beside the vault's `RULES.md`. Start it with:
 	```
 	# Local rules
