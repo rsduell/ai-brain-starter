@@ -305,6 +305,41 @@ class KitSyncTest(unittest.TestCase):
 		self.assertTrue((self.vault / "scripts/lint_brain.py").exists())
 		self.assertFalse((self.vault / "templates/Journal Entry.md").exists())
 
+	def sync_then_conflict(self):
+		"""Fully adopt core and lint, then a kit commit that conflicts on RULES.md and changes lint cleanly."""
+		kit_sync.init(str(self.vault), str(self.kit), components={"journal": "declined"})
+		kit_sync.apply(str(self.vault), str(self.kit), [], safe=True)
+		first = git(self.kit, "rev-parse", "HEAD")
+		(self.vault / "brain/RULES.md").write_text("line 1\nline 2\nvault line 3\nline 4\nline 5\n")
+		self.write_kit({"brain/RULES.md": "line 1\nline 2\nkit line 3\nline 4\nline 5\n", "scripts/lint_brain.py": "print('lint v2')\n"})
+		second = self.commit_kit("kit change")
+		return first, second
+
+	def test_apply_with_a_conflict_open_keeps_kit_commit(self):
+		first, second = self.sync_then_conflict()
+
+		kit_sync.apply(str(self.vault), str(self.kit), [], safe=True)
+
+		lock = self.read_lock()
+		self.assertEqual(lock["kit_commit"], first)
+		self.assertEqual(lock["kit_applied"], second)
+
+	def test_resolving_the_last_open_file_moves_kit_commit(self):
+		first, second = self.sync_then_conflict()
+		kit_sync.apply(str(self.vault), str(self.kit), [], safe=True)
+
+		kit_sync.resolve(str(self.vault), str(self.kit), "brain/RULES.md")
+
+		self.assertEqual(self.read_lock()["kit_commit"], second)
+
+	def test_keep_vault_answer_on_the_last_conflict_moves_kit_commit(self):
+		first, second = self.sync_then_conflict()
+		kit_sync.apply(str(self.vault), str(self.kit), [], safe=True)
+
+		kit_sync.decide(str(self.vault), str(self.kit), "rules-line-3", "vault", "vault line 3", "kit line 3", paths=["brain/RULES.md"])
+
+		self.assertEqual(self.read_lock()["kit_commit"], second)
+
 	def test_resolve_records_base_and_keeps_vault_content(self):
 		(self.vault / "CLAUDE.md").write_text("Merged by hand.\n")
 		kit_sync.init(str(self.vault), str(self.kit))

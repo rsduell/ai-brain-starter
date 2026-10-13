@@ -9,5 +9,5 @@ In short:
 - **Plans:** if `plans/` exists, every plan an agent writes goes in its ticket's plan note, pasted wholesale, and the implementer and verifier record their part there (RULES.md → Plans).
 - **Dates:** if `brain/Schedule.md` exists, dated things go there (RULES.md → Schedule).
 - **Documents in `inbox/ingest/`:** ingest them into a cluster (RULES.md → Ingesting documents).
-- **Adopting this kit into a vault, or updating a vault from it:** follow `ADOPT.md`.
+- **Adopting this kit into a vault, or updating a vault from it:** follow `ADOPT.md` in the kit's clone (a vault that adopted the kit names the clone as `kit_source` in its `kit.lock.json`).
 - **Commit** explicit paths after each unit of work. The pre-commit hook lints what you staged.

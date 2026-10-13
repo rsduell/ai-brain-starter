@@ -1,7 +1,7 @@
 # Adopting the kit into a vault, and updating it later
 
 For an agent working in a vault (an Obsidian vault, or any folder of notes) that should follow this kit's methods. The kit stays in its own clone; the vault gets copies of the parts it adopts, plus two files of its own:
-- `kit.lock.json` at the vault root: which kit commit was applied, where each kit folder lives in the vault, which optional parts were taken or declined, and every answer the human gave. `scripts/kit_sync.py` reads and writes it.
+- `kit.lock.json` at the vault root: the kit commit the vault is fully in sync with (`kit_commit`; it moves only when nothing is left to apply or answer, while `kit_applied` is the last commit anything came from), where each kit folder lives in the vault, which optional parts were taken or declined, and every answer the human gave. `scripts/kit_sync.py` reads and writes it.
 - `RULES.local.md` beside the vault's copy of `brain/RULES.md`: everything this vault does differently from the kit, each with the kit rule it replaces. Agents read both, and `RULES.local.md` wins.
 
 The kit's own files are copied **unchanged** wherever possible. The vault's differences go in `RULES.local.md`, not into the copies, so a later kit update applies without questions.
@@ -35,7 +35,7 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 - The kit's source is the kit file and section, with the kit commit.
 - When the vault has no way of its own (an optional part it has never done), write `Vault: none found` and say what you looked for.
 - Ask at most four questions at once, most consequential first, in rounds. A question that depends on another's answer waits for it, and says so ("asked only if 1 keeps the journal").
-- For a file conflict, show the differing lines from both sides, labeled the same way.
+- For a file conflict, show the differing lines from both sides, labeled the same way, plus a `Base:` line with what both started from (the kit file at the vault's `base`), so the human can see who changed what.
 
 ## First adoption
 
@@ -62,7 +62,7 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 	kit_sync.py decide --vault . --id journal-layout --choice vault --vault-text "Journal/YYYY/MM-MMMM/" --kit-text "journal/YYYY-MM-DD.md" --note "..."
 	```
 	Give each decision a short, stable `--id`. Add `--path <kit path>` for each kit file a "keep vault" or "skip" decision covers, so a later update notices when the kit changes that file.
-	- `--choice`: `vault` keeps the vault's way, `kit` takes the kit's, `skip` leaves the part out, and `merged` is anything else (both combined, or a third way the human chose).
+	- `--choice`: `vault` keeps the vault's way, `kit` takes the kit's, `skip` leaves the part out, and `merged` is anything else (both combined, or a third way the human chose). Only `vault` and `skip` make later updates ask again (`recheck`); `kit` and `merged` are a record, and the file keeps updating normally.
 	- Record every answer with `decide`, including one carried out with `resolve`: the lock keeps why, not only what.
 5. **Plan:** `kit_sync.py plan --vault .`. Then for each action that needs an answer:
 	- `exists-in-vault`: the vault has its own file where the kit's would go (often `CLAUDE.md`, `AGENTS.md`, `.gitignore` or a hook). Show both, ask, and act on the answer:
@@ -95,21 +95,23 @@ Options: keep vault (recorded in RULES.local.md) Â· take kit (moves 212 files) Â
 	- The adopted tests pass: `python3 -m unittest discover -s <mapped scripts folder>`.
 	- The lint passes: `python3 <mapped scripts folder>/lint_brain.py --all`.
 	- `kit_sync.py plan --vault .` shows no `new`, `exists-in-vault` or `conflict` left in adopted components.
-10. **Commit** with explicit paths: the adopted files, `kit.lock.json`, `RULES.local.md` and the edited pointer files. Name the kit commit in the message (`adopt ai-brain-starter <sha>`).
+10. **Commit** with explicit paths: the adopted files, `kit.lock.json`, `RULES.local.md` and the edited pointer files. Name the kit commit in the message (`adopt ai-brain-starter <sha>`). Then log the work the way the vault's own rules say (its daily log, for example), in a separate commit if that's how the vault commits.
 
 ## Updating from the kit
 
 1. **Pull the kit:** `git -C <kit> pull`.
-2. **Say what changed in the kit:** `git -C <kit> log --oneline <kit_commit from kit.lock.json>..HEAD`, summarized for the human in a few lines.
-3. **Plan:** `kit_sync.py plan --vault .`.
-4. **Safe changes:** `new`, `update-clean` and `update-merge` in adopted components. List them, get one yes for the batch, then `kit_sync.py apply --vault . --safe`.
-5. **Ask about the rest**, each in the question format:
+2. **Say what changed in the kit:** `git -C <kit> log --oneline <kit_commit from kit.lock.json>..HEAD`, summarized for the human in a few lines. `kit_commit` is where the vault was last fully in sync, so a change still waiting on an earlier answer stays in this range.
+3. **Read this file again**, as it is now. If it changed in that range (`git -C <kit> diff <kit_commit>..HEAD -- ADOPT.md`), check the vault against the new guidance, especially step 7 of First adoption (pointer files, `brain.json`, the index), and ask about anything it would change.
+4. **Plan:** `kit_sync.py plan --vault .`.
+5. **Safe changes:** `new`, `update-clean` and `update-merge` in adopted components. List them, get one yes for the batch, then `kit_sync.py apply --vault . --safe`.
+6. **Ask about the rest**, each in the question format:
+	- **A conflict or `vault-edited` on a rules file** (`RULES.md`) means the vault edited its copy instead of writing to `RULES.local.md`. Say so, and offer to move the vault's change into `RULES.local.md` and take the kit's file, which keeps later updates clean.
 	- `conflict`: both sides changed the same lines. Show both versions of those lines. Then keep the vault's (`decide --choice vault --path ...`), take the kit's (`resolve --take-kit`), or merge by hand and `resolve`.
 	- `recheck`: an earlier decision kept the vault's way, and the kit's side has changed since. Show what changed in the kit (`git -C <kit> diff <kit_basis>..HEAD -- <path>`) and ask again. Record the new answer with `decide` under the same id, which also moves its `kit_basis` forward.
 	- `missing-in-vault`: adopted once, gone from the vault now. Ask whether to restore it (`resolve --take-kit`) or record it as declined (`decide --choice skip --path ...`).
 	- `removed-in-kit`: the kit dropped a file the vault still has. Ask whether to keep or delete the vault's copy. Either way, remove its entry from `files` in `kit.lock.json` so `check` passes.
 	- new optional components: describe them and ask, as in first adoption.
-6. **Update `RULES.local.md`** for any new or changed difference, and check that its existing sections still match what the kit's new `RULES.md` says.
-7. **Check and commit** as in first adoption, with the range in the message (`ai-brain-starter <old>..<new>`).
+7. **Update `RULES.local.md`** for any new or changed difference, and check that its existing sections still match what the kit's new `RULES.md` says.
+8. **Check and commit** as in first adoption, with the range in the message (`ai-brain-starter <old>..<new>`). Committing the safe batch before the open questions are answered is fine: the lock keeps `kit_commit` back until they are, and the next `plan` shows them again.
 
 `vault-edited`, `kept-vault`, `unchanged` and `declined` need nothing.

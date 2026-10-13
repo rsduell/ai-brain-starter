@@ -52,6 +52,7 @@ ORDER = [
 	"new", "update-clean", "update-merge",
 	"vault-edited", "kept-vault", "unchanged", "declined",
 ]
+ASK = {"conflict", "exists-in-vault", "recheck", "missing-in-vault", "removed-in-kit"}
 QUIET = {"vault-edited", "kept-vault", "unchanged", "declined", "example", "kit-only"}
 
 
@@ -102,7 +103,7 @@ def load_manifest(kit, commit=None):
 
 def empty_lock(kit):
 	return {
-		"kit_source": short_home(kit), "kit_commit": None, "adopted": None, "updated": None,
+		"kit_source": short_home(kit), "kit_commit": None, "kit_applied": None, "adopted": None, "updated": None,
 		"path_map": {}, "components": {}, "files": {}, "decisions": [],
 	}
 
@@ -118,10 +119,20 @@ def save_lock(vault, lock):
 	Path(vault, LOCK_NAME).write_text(json.dumps(lock, indent="\t") + "\n", encoding="utf-8")
 
 
-def stamp(lock, commit):
-	lock["kit_commit"] = commit
-	lock["adopted"] = lock.get("adopted") or today()
+def stamp(vault, kit, lock, commit):
+	"""kit_applied: the last kit commit anything came from. kit_commit: the commit the vault is fully in sync
+	with, so the next update's "what changed" starts there. It moves only when nothing is left to apply or answer."""
+	lock["kit_applied"] = commit
 	lock["updated"] = today()
+	if not any(open_item(e) for e in plan_with(vault, kit, lock, commit)):
+		lock["kit_commit"] = commit
+		lock["adopted"] = lock.get("adopted") or today()
+
+
+def open_item(entry):
+	if entry["action"] in ASK:
+		return True
+	return entry["action"] in SAFE and entry["component_state"] in ("adopted", "undecided")
 
 
 def vault_path(manifest, lock, path):
@@ -217,7 +228,10 @@ def plan(vault, kit, path_map=None, components=None):
 	lock = load_lock(vault) or empty_lock(kit)
 	lock["path_map"].update(path_map or {})
 	lock["components"].update(components or {})
-	commit = head(kit)
+	return plan_with(vault, kit, lock, head(kit))
+
+
+def plan_with(vault, kit, lock, commit):
 	manifest = load_manifest(kit, commit)
 	out, seen = [], set()
 	for name, component in manifest["components"].items():
@@ -273,7 +287,7 @@ def apply(vault, kit, paths, safe=False):
 		}
 		print("%s: %s → %s" % (e["action"], path, e["vault_path"]))
 	if chosen:
-		stamp(lock, commit)
+		stamp(vault, kit, lock, commit)
 	save_lock(vault, lock)
 	return 0
 
@@ -294,7 +308,7 @@ def resolve(vault, kit, path, take_kit=False):
 		print("resolve: %s doesn't exist in the vault; use --take-kit to copy the kit's" % vp, file=sys.stderr)
 		return 1
 	lock["files"][path] = {"vault_path": vp, "base": head_blob, "state": "kit" if take_kit else "resolved"}
-	stamp(lock, commit)
+	stamp(vault, kit, lock, commit)
 	save_lock(vault, lock)
 	return 0
 
@@ -309,6 +323,8 @@ def decide(vault, kit, decision_id, choice, vault_text, kit_text, note=None, pat
 	if paths:
 		decision["paths"] = list(paths)
 	lock["decisions"] = [d for d in lock["decisions"] if d["id"] != decision_id] + [decision]
+	if lock.get("kit_applied"):
+		stamp(vault, kit, lock, head(kit))
 	save_lock(vault, lock)
 
 
@@ -350,8 +366,10 @@ def check(vault, kit):
 
 def print_plan(vault, kit, entries):
 	lock = load_lock(vault) or empty_lock(kit)
-	applied = lock["kit_commit"][:7] if lock["kit_commit"] else ("not applied yet" if Path(vault, LOCK_NAME).exists() else "none")
-	print("kit %s at %s · vault %s · lock %s" % (short_home(kit), head(kit)[:7], vault, applied))
+	synced = lock["kit_commit"][:7] if lock["kit_commit"] else ("not in sync yet" if Path(vault, LOCK_NAME).exists() else "no lock")
+	applied = (lock.get("kit_applied") or "")[:7]
+	print("kit %s at %s · vault %s · in sync with %s%s" % (
+		short_home(kit), head(kit)[:7], vault, synced, " (last applied %s)" % applied if applied and applied != synced else ""))
 	undecided = sorted({e["component"] for e in entries if e.get("component_state") == "undecided"})
 	if undecided:
 		print("undecided optional components (ask, then init --component NAME=adopted|declined): " + ", ".join(undecided))
