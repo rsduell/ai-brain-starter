@@ -147,6 +147,7 @@ Obsidian (installer 1.12.7 and later) ships an `obsidian` command that talks to 
 	- Supersession: `backlinks file=<note>` lists every hub, map and leaf that sends readers to the retracted fact. Point those at the new one; logs that cite it as history stay.
 	- Promotion: `backlinks file="AI PROJ-123"` shows which facts already cite the log, so nothing is promoted twice.
 	- After writing links: `unresolved verbose` covers human notes too, which the lint doesn't check.
+- **Accidental tags:** Obsidian reads `#` followed by a letter anywhere in a note's text as a tag, link text included. Put Slack channels in a code span (`` `#general` ``, ``[`#general`](<link>)``), use a number rather than a `#N` placeholder, and keep a slash off a number (`#42/PROJ-7` is a tag). `tags counts` after writing shows anything that crept in.
 - **App unavailable:** read with your file tools and make every edit, frontmatter included, with your edit tool. Still no shell writes.
 - **Other repos:** this is a habit every session follows, so it also gets a line in your global instructions (Codebase facts; README → Using it while you work in other repos).
 
