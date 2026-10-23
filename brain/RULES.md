@@ -128,6 +128,26 @@ When a newer source or a correction overturns a fact, fix it in place and say wh
 - **Links:** the issue log header gets `plan note: [[PROJ-123 Plan]]`, and its summary links the current plan: `- **plan:** [[PROJ-123 Plan#Plan (YYYY-MM-DD)]] · <status>`.
 - **Archive:** when the ticket closes, move the plan note to `plans/_archive/`. Wikilinks keep working.
 
+## Obsidian CLI (optional)
+
+Obsidian 1.12 and later ship an `obsidian` command that talks to the running app and its live index of links, backlinks and properties. A vault that adopted this part (its `kit.lock.json` lists `obsidian-cli` as adopted, and `RULES.local.md` names the vault) reads and writes its notes through it. Skip this section otherwise. It changes how agents touch notes, not how the brain works: grep for IDs, the lint and the scripts stay file based and run without the app.
+- **Start:** the app has to be running (on macOS, `open -g -a Obsidian`, then wait a few seconds). From another repo, pass `vault=<name>` first (`obsidian vaults` lists them). `obsidian help <command>` is the reference.
+- **Addressing:** `file=` resolves like a wikilink; `path=` is exact from the vault root. Every write uses `path=`. `create` with `name=` alone lands in Obsidian's new note folder, not where you meant.
+- **Lookups:** `search:context query=<term> path=<folder>`, `backlinks file=<note> counts`, `links`, `property:read`, `properties counts`, `tags counts`, `unresolved verbose`. Grep stays right for an exact ID across a cluster (Answering), and reading a known file whole is fine with your file tools, which your edit tool needs anyway.
+- **Frontmatter:** `property:set name=<key> value=<value> path=<note>` and `property:remove`.
+	- Leave out `type=`. It registers the key's type for the whole vault in `.obsidian/types.json`.
+	- A list is a JSON array: `value='["[[AI PROJ-123]]","[[2026-10-06]]"]'`. A comma separated string on a key Obsidian already treats as a list is stored as one string. The value replaces the whole list, so read it first to add one item.
+	- Values come back unquoted. `"2026-10-06"` becomes `2026-10-06`, which the lint accepts, but `"10:35"` becomes `10:35`, which YAML 1.1 readers take as a number. Write a value that must stay a quoted string with your edit tool.
+- **New notes:** `create path=<note> template=<name>`. Templates fill from today and the file name, so check the top of the new note.
+- **Body text:** your edit tool. `append` only adds at the end of a file, and most brain notes put the newest entry first under a heading. **Never sed, awk, `perl -i` or shell redirection (`>`, `>>`, `tee`) on a note.**
+- **Moves and renames:** `move path=<note> to=<folder>/` and `rename`, which update every link to the note when Obsidian's "Automatically update internal links" setting is on. Use them for the archive moves (Plans) instead of `mv` or `git mv`.
+- **Where it helps the brain:**
+	- Supersession: `backlinks file=<note>` lists every hub, map and leaf that sends readers to the retracted fact. Point those at the new one; logs that cite it as history stay.
+	- Promotion: `backlinks file="AI PROJ-123"` shows which facts already cite the log, so nothing is promoted twice.
+	- After writing links: `unresolved verbose` covers human notes too, which the lint doesn't check.
+- **App unavailable:** read with your file tools and make every edit, frontmatter included, with your edit tool. Still no shell writes.
+- **Other repos:** this is a habit every session follows, so it also gets a line in your global instructions (Codebase facts; README → Using it while you work in other repos).
+
 ## Codebase facts
 
 A cluster about a codebase (`<Project>-Dev`) holds what agents learn while working: gotchas, conventions, decisions that outlive one ticket. Its leaves set `anchored: true`, and every fact is a `###` heading with metadata bullets right under it (`templates/Code Facts Leaf.md`):

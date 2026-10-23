@@ -82,6 +82,11 @@
 				{"path": "templates/Plan.md", "kind": "template"}
 			]
 		},
+		"obsidian-cli": {
+			"optional": true,
+			"describe": "Agents read and write notes through the Obsidian CLI (Obsidian 1.12 or later, app running) instead of shell tools. Rules only: RULES.md → Obsidian CLI.",
+			"files": []
+		},
 		"schedule": {
 			"optional": true,
 			"describe": "Everything dated in one list, the date scan, and the due and coming up report.",

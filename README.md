@@ -94,6 +94,14 @@ cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py. Tag is
 [used: [[leaf]]], [rediscovered: [[leaf]]], [miss] or [why] when they apply (RULES.md → Measuring).
 ```
 
+If the vault uses the optional Obsidian CLI, add a line like this too, with your vault's name:
+
+```
+Write notes in ~/my-brain through the Obsidian CLI (obsidian vault=my-brain ...): frontmatter with
+property:set, new notes with create path=, moves with move, body text with your edit tool. Never
+sed, awk or a shell redirect on a note (RULES.md → Obsidian CLI).
+```
+
 ## Everyday use
 
 | You say | The agent |
@@ -118,6 +126,7 @@ You don't need all of it on day one:
 4. **Add a journal** if you want a note of your own for each day, linked to the agents' daily log (below).
 5. **Add the schedule** if dates keep slipping through your notes (below).
 6. **Add plan notes** if you plan in one AI and implement or verify in another (below).
+7. **Add the Obsidian CLI** if the vault lives in Obsidian and agents should work through the app (below).
 
 ## Optional: a journal
 
@@ -128,6 +137,10 @@ The date scan reads `journal/` along with `notes/`, so dates you write there rea
 ## Optional: plan notes
 
 If you plan with one AI, implement with another and verify with a third, `plans/<TICKET> Plan.md` is the handoff. Plans are test driven where they can be: contracts first, then tests that fail against them, then the code that turns them green. Each plan goes in exactly as the planning tool wrote it, never reformatted. Around it sit a status, who did each phase, a checkbox per step for the implementer, anything the plan lacks that another AI needs, and the implementer's deviations. The verifier checks the work against it and records the result. Rules: `brain/RULES.md` → Plans.
+
+## Optional: the Obsidian CLI
+
+If you keep the brain in Obsidian 1.12 or later, agents can work through its `obsidian` command instead of shell tools. Lookups come from the app's live index (backlinks, properties, links that resolve nowhere), frontmatter changes go through `property:set`, and moves update every link to the note. Body text goes through the agent's edit tool, and nothing writes a note with sed or a shell redirect. The brain itself doesn't change: grep, the lint and the scripts still work on plain files, with or without the app. It needs the app running whenever agents work. Rules, with the gotchas (`type=` changes a key for the whole vault, lists go as JSON arrays, values lose their quotes): `brain/RULES.md` → Obsidian CLI.
 
 ## Optional: a schedule
 

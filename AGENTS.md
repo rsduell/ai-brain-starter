@@ -8,6 +8,7 @@ In short:
 - **Journal:** if `journal/` exists, today's entry pairs with today's daily log; write only below its divider (RULES.md → Journal).
 - **Plans:** if `plans/` exists, every plan an agent writes goes in its ticket's plan note, pasted wholesale, and the implementer and verifier record their part there (RULES.md → Plans).
 - **Dates:** if `brain/Schedule.md` exists, dated things go there (RULES.md → Schedule).
+- **Obsidian CLI:** if this vault adopted it (`RULES.local.md` says so), read and write notes through `obsidian`, and never use sed, awk or a shell redirect on a note (RULES.md → Obsidian CLI).
 - **Documents in `inbox/ingest/`:** ingest them into a cluster (RULES.md → Ingesting documents).
 - **Adopting this kit into a vault, or updating a vault from it:** follow `ADOPT.md` in the kit's clone (a vault that adopted the kit names the clone as `kit_source` in its `kit.lock.json`).
 - **Commit** explicit paths after each unit of work. The pre-commit hook lints what you staged.

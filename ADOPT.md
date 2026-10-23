@@ -43,12 +43,14 @@ Options: keep vault (recorded in RULES.local.md) · take kit (moves 212 files) �
 2. **Survey the vault** and write down what you find:
 	- its folders, and where notes, attachments, journals and templates live
 	- its agent rules: `CLAUDE.md`, `AGENTS.md`, `.cursor/`, and any rules files inside folders
-	- Obsidian settings, if present: `.obsidian/app.json` (`attachmentFolderPath`), `.obsidian/templates.json` (templates folder), `.obsidian/daily-notes.json` (journal folder and date format)
+	- Obsidian settings, if present: `.obsidian/app.json` (`attachmentFolderPath`, `newFileFolderPath`, `alwaysUpdateLinks`), `.obsidian/templates.json` (templates folder), `.obsidian/daily-notes.json` (journal folder and date format)
+	- the Obsidian CLI, if the vault is an Obsidian vault: `command -v obsidian`, then with the app running `obsidian version` (1.12 or later) and `obsidian vaults` (the vault's name)
 	- Git: is it a repo, its `.gitignore`, `core.hooksPath` and any existing hooks
 	- note names used more than once (wikilinks need unique names): `find . -name '*.md' -not -path './.git/*' | sed 's|.*/||' | sort | uniq -d`
 	- the tracker it uses for tickets, if any (Linear, Jira, GitHub issues), and its key pattern
 	- its naming habits: leading underscores on support folders (`_attachments`), capitalized note folders, and so on
-3. **Propose the folder map and the parts to adopt.** For each kit folder in `kit.json` → `paths` (`brain`, `assets`, `inbox`, `notes`, `journal`, `plans`, `templates`, `scripts`, `hooks`), propose the vault folder it maps to: the vault's existing folder where one plays that role, else the kit's name. For each optional component (ingest, code-facts, metrics, journal, plans, schedule), say what it does and whether the vault seems to want it. Ask, in the question format, about each one where the vault already has its own way.
+3. **Propose the folder map and the parts to adopt.** For each kit folder in `kit.json` → `paths` (`brain`, `assets`, `inbox`, `notes`, `journal`, `plans`, `templates`, `scripts`, `hooks`), propose the vault folder it maps to: the vault's existing folder where one plays that role, else the kit's name. For each optional component (ingest, code-facts, metrics, journal, plans, schedule, obsidian-cli), say what it does and whether the vault seems to want it. Ask, in the question format, about each one where the vault already has its own way.
+	- **obsidian-cli:** offer it only when the survey found the CLI at 1.12 or later. Otherwise record it as declined and say why. It changes how agents write notes (no shell writes, frontmatter through `property:set`), so say that when you ask.
 	- **Preview before writing:** `kit_sync.py plan --vault . --map brain=_brain --component journal=adopted ...` shows the plan under a proposed map without writing anything, so `exists-in-vault` questions can go in the first round.
 	- **Names:** new folders follow the vault's naming habit; ask when it's unclear.
 	- **A map value replaces the kit folder's whole path.** `inbox` is `inbox/ingest` in the kit, so `--map inbox=_inbox/ingest` keeps the ingest level and `--map inbox=_inbox` drops it.
@@ -77,6 +79,7 @@ Options: keep vault (recorded in RULES.local.md) · take kit (moves 212 files) �
 	- `AGENTS.md` and `CLAUDE.md` at the vault root: correct every path that names a mapped folder of an adopted part (`brain/`, `inbox/ingest/`, `journal/` and so on), drop or mark lines about declined parts, and make sure they name `RULES.local.md`. These are the pointers agents read first, so they must be right even though it makes them `vault-edited`; later kit changes to them merge.
 	- Git: `git config core.hooksPath <mapped hooks folder>` if the vault has no hook folder yet. If it already has a `pre-commit`, merge the kit's checks into it (step 5, merge). The kit's hook finds the lint in `scripts/`, or in any top level folder holding `lint_brain.py`.
 	- Create the vault's brain index from `templates/Index.md`, with its paths fitted to the folder map and its lines for declined parts dropped (no issue logs line in a vault without tickets). The index is the vault's own note from then on, not a kit copy.
+	- **obsidian-cli adopted:** name the vault in `RULES.local.md` (the `vault=` value sessions in other repos pass). If `alwaysUpdateLinks` is off, moves leave links behind: say so and ask whether to turn it on. Give the human the global instructions line from README → Using it while you work in other repos. Those instructions live outside the vault, so the human adds it, or says you may.
 8. **Write `RULES.local.md`** beside the vault's `RULES.md`. Start it with:
 	```
 	# Local rules
