@@ -124,7 +124,7 @@ def stamp(vault, kit, lock, commit):
 	with, so the next update's "what changed" starts there. It moves only when nothing is left to apply or answer."""
 	lock["kit_applied"] = commit
 	lock["updated"] = today()
-	if not any(open_item(e) for e in plan_with(vault, kit, lock, commit)):
+	if not undecided(load_manifest(kit, commit), lock) and not any(open_item(e) for e in plan_with(vault, kit, lock, commit)):
 		lock["kit_commit"] = commit
 		lock["adopted"] = lock.get("adopted") or today()
 
@@ -158,6 +158,17 @@ def component_state(name, component, lock):
 	if role == "kit":
 		return "kit-only"
 	return lock["components"].get(name) or ("undecided" if component.get("optional") else "adopted")
+
+
+def undecided(manifest, lock):
+	return sorted(name for name, c in manifest["components"].items() if component_state(name, c, lock) == "undecided")
+
+
+def undecided_components(vault, kit, components=None):
+	"""Optional components with no answer yet, files or not. components previews answers; nothing is written."""
+	lock = load_lock(vault) or empty_lock(kit)
+	lock["components"].update(components or {})
+	return undecided(load_manifest(kit, head(kit)), lock)
 
 
 def decision_for(lock, path):
@@ -364,15 +375,14 @@ def check(vault, kit):
 	return errors
 
 
-def print_plan(vault, kit, entries):
+def print_plan(vault, kit, entries, unanswered):
 	lock = load_lock(vault) or empty_lock(kit)
 	synced = lock["kit_commit"][:7] if lock["kit_commit"] else ("not in sync yet" if Path(vault, LOCK_NAME).exists() else "no lock")
 	applied = (lock.get("kit_applied") or "")[:7]
 	print("kit %s at %s · vault %s · in sync with %s%s" % (
 		short_home(kit), head(kit)[:7], vault, synced, " (last applied %s)" % applied if applied and applied != synced else ""))
-	undecided = sorted({e["component"] for e in entries if e.get("component_state") == "undecided"})
-	if undecided:
-		print("undecided optional components (ask, then init --component NAME=adopted|declined): " + ", ".join(undecided))
+	if unanswered:
+		print("undecided optional components (ask, then init --component NAME=adopted|declined): " + ", ".join(unanswered))
 	by_action = {}
 	for e in entries:
 		by_action.setdefault(e["action"], []).append(e)
@@ -431,11 +441,12 @@ def main(argv):
 		init(vault, kit, parse_pairs(args.map, "--map"), parse_pairs(args.component, "--component"))
 		return 0
 	if args.command == "plan":
-		entries = plan(vault, kit, parse_pairs(args.map, "--map"), parse_pairs(args.component, "--component"))
+		components = parse_pairs(args.component, "--component")
+		entries = plan(vault, kit, parse_pairs(args.map, "--map"), components)
 		if args.json:
 			print(json.dumps(entries, indent="\t"))
 		else:
-			print_plan(vault, kit, entries)
+			print_plan(vault, kit, entries, undecided_components(vault, kit, components))
 		return 0
 	if args.command == "apply":
 		if not args.safe and not args.paths:

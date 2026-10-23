@@ -315,6 +315,55 @@ class KitSyncTest(unittest.TestCase):
 		second = self.commit_kit("kit change")
 		return first, second
 
+	def add_component_without_files(self):
+		"""A kit commit adding an optional component that is rules only, with no files of its own."""
+		manifest = json.loads(json.dumps(MANIFEST))
+		manifest["components"]["cli"] = {"optional": True, "describe": "rules only", "files": []}
+		self.write_kit({"kit.json": json.dumps(manifest, indent="\t")})
+		return self.commit_kit("rules only component")
+
+	def test_undecided_components_include_one_without_files(self):
+		self.add_component_without_files()
+		kit_sync.init(str(self.vault), str(self.kit))
+
+		undecided = kit_sync.undecided_components(str(self.vault), str(self.kit))
+
+		self.assertEqual(undecided, ["cli", "journal"])
+
+	def test_undecided_components_leave_out_a_previewed_answer(self):
+		self.add_component_without_files()
+		kit_sync.init(str(self.vault), str(self.kit))
+
+		undecided = kit_sync.undecided_components(str(self.vault), str(self.kit), components={"cli": "adopted"})
+
+		self.assertEqual(undecided, ["journal"])
+
+	def test_plan_names_an_undecided_component_without_files(self):
+		self.add_component_without_files()
+		kit_sync.init(str(self.vault), str(self.kit), components={"journal": "declined"})
+		out = io.StringIO()
+
+		with contextlib.redirect_stdout(out):
+			kit_sync.main(["plan", "--vault", str(self.vault), "--kit", str(self.kit)])
+
+		self.assertIn("undecided optional components (ask, then init --component NAME=adopted|declined): cli", out.getvalue())
+
+	def test_undecided_component_without_files_keeps_kit_commit(self):
+		self.add_component_without_files()
+		kit_sync.init(str(self.vault), str(self.kit), components={"journal": "declined"})
+
+		kit_sync.apply(str(self.vault), str(self.kit), [], safe=True)
+
+		self.assertIsNone(self.read_lock()["kit_commit"])
+
+	def test_answering_the_component_without_files_lets_kit_commit_move(self):
+		head = self.add_component_without_files()
+		kit_sync.init(str(self.vault), str(self.kit), components={"journal": "declined", "cli": "declined"})
+
+		kit_sync.apply(str(self.vault), str(self.kit), [], safe=True)
+
+		self.assertEqual(self.read_lock()["kit_commit"], head)
+
 	def test_apply_with_a_conflict_open_keeps_kit_commit(self):
 		first, second = self.sync_then_conflict()
 
