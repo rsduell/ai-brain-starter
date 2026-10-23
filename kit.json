@@ -84,8 +84,11 @@
 		},
 		"obsidian-cli": {
 			"optional": true,
-			"describe": "Agents read and write notes through the Obsidian CLI (Obsidian 1.12 or later, app running) instead of shell tools. Rules only: RULES.md → Obsidian CLI.",
-			"files": []
+			"describe": "Agents read and write notes through the Obsidian CLI (installer 1.12.7 or later) instead of shell tools, and a check that says how to set it up. Rules: RULES.md → Obsidian CLI.",
+			"files": [
+				{"path": "scripts/obsidian_check.py", "kind": "code"},
+				{"path": "scripts/test_obsidian_check.py", "kind": "code"}
+			]
 		},
 		"schedule": {
 			"optional": true,

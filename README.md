@@ -94,7 +94,7 @@ cluster, read that hub and run python3 ~/my-brain/scripts/check_facts.py. Tag is
 [used: [[leaf]]], [rediscovered: [[leaf]]], [miss] or [why] when they apply (RULES.md → Measuring).
 ```
 
-If the vault uses the optional Obsidian CLI, add a line like this too, with your vault's name:
+If the vault uses the optional Obsidian CLI, add a line like this too. `python3 scripts/obsidian_check.py` prints it with your vault's name and folder filled in:
 
 ```
 Write notes in ~/my-brain through the Obsidian CLI (obsidian vault=my-brain ...): frontmatter with
@@ -115,6 +115,7 @@ sed, awk or a shell redirect on a note (RULES.md → Obsidian CLI).
 | "Is the Demo-Dev cluster paying off?" | `brain_metrics.py` for the window since the last review, read against the baseline |
 | "Plan PROJ-123", then "implement the plan" and "verify it" in other tools (optional plans) | Files the plan in `plans/` as written; each tool records its part there |
 | "Wrap up the day" (optional journal) | Summarizes today's daily log into the journal, below the divider |
+| "Set up the Obsidian CLI" (optional) | Runs `obsidian_check.py` and walks you through each fix it prints |
 | "What's coming up?" (optional schedule) | Scans your notes for new dates and asks about each, then prints due and coming up |
 
 ## Start small
@@ -140,7 +141,15 @@ If you plan with one AI, implement with another and verify with a third, `plans/
 
 ## Optional: the Obsidian CLI
 
-If you keep the brain in Obsidian 1.12 or later, agents can work through its `obsidian` command instead of shell tools. Lookups come from the app's live index (backlinks, properties, links that resolve nowhere), frontmatter changes go through `property:set`, and moves update every link to the note. Body text goes through the agent's edit tool, and nothing writes a note with sed or a shell redirect. The brain itself doesn't change: grep, the lint and the scripts still work on plain files, with or without the app. It needs the app running whenever agents work. Rules, with the gotchas (`type=` changes a key for the whole vault, lists go as JSON arrays, values lose their quotes): `brain/RULES.md` → Obsidian CLI.
+If you keep the brain in Obsidian, agents can work through its `obsidian` command instead of shell tools. Lookups come from the app's live index (backlinks, properties, links that resolve nowhere), frontmatter changes go through `property:set`, and moves update every link to the note. Body text goes through the agent's edit tool, and nothing writes a note with sed or a shell redirect. The brain itself doesn't change: grep, the lint and the scripts still work on plain files, with or without the app. The CLI talks to the running app, and starts it if it isn't open. Rules, with the gotchas (`type=` changes a key for the whole vault, lists go as JSON arrays, values lose their quotes, errors exit 0): `brain/RULES.md` → Obsidian CLI.
+
+Setup:
+1. Use the Obsidian installer 1.12.7 or later ([download](https://obsidian.md/download); the app's own updates don't update the installer).
+2. In Obsidian, open the folder as a vault, then turn on Settings → General → **Command line interface** and follow its prompt. On macOS it asks for an administrator password to create `/usr/local/bin/obsidian`; on Linux it copies to `~/.local/bin`, which must be on your PATH; on Windows, restart the terminal afterwards.
+3. Turn on Settings → Files and links → **Automatically update internal links**, so moves keep links working.
+4. Run `python3 scripts/obsidian_check.py` from the vault. It checks all of the above, prints the fix for anything missing, and when it passes, prints the line for your global instructions with your vault's name filled in.
+
+Adopting the kit with an agent does this for you: it runs the check, walks you through any fix, and asks whether to take the part ([Obsidian's CLI help](https://obsidian.md/help/cli) has more).
 
 ## Optional: a schedule
 
@@ -173,6 +182,7 @@ journal/                  your day notes, paired with the daily logs (optional)
 plans/                    agent plans, the handoff between AIs (optional)
 templates/                index, hub, leaf, code facts leaf, issue log, daily log, journal entry, plan, schedule
 scripts/                  lint_brain.py, check_facts.py, brain_metrics.py, asset_text.py (+ docling_text.py, pdf_text.swift),
-                          schedule.py and date_scan.py (optional schedule), kit_sync.py (adopting and updating), tests
+                          schedule.py and date_scan.py (optional schedule), obsidian_check.py (optional Obsidian CLI),
+                          kit_sync.py (adopting and updating), tests
 hooks/pre-commit          secrets, file size, lint
 ```
